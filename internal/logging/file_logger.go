@@ -1,10 +1,8 @@
 package logging
 
 import (
-	"bytes"
-	"compress/gzip"
 	"fmt"
-	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/configuration"
+	"github.com/spf13/viper"
 	"log"
 	"os"
 	"sync"
@@ -68,19 +66,13 @@ func GetFileLoggerInstance() (*FileLogger, error) {
 	if fileLoggerInstance == nil {
 		once.Do(
 			func() {
-				var configurator *configuration.ConcreteConfigurator
-				configurator, err = configuration.GetInstance()
-				if err != nil {
-					return
-				}
-
 				var file *os.File
 				file, err = os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 				if err != nil {
 					return
 				}
 
-				levelString := configurator.GetConfig().Logging.LogLevel
+				levelString := viper.GetString("logging.log_level")
 
 				logFlag := log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix
 				loggers := &loggerBundle{
@@ -97,33 +89,4 @@ func GetFileLoggerInstance() (*FileLogger, error) {
 	}
 
 	return fileLoggerInstance, err
-}
-
-func compressFile(path string) error {
-	input, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	var buffer bytes.Buffer
-	writer := gzip.NewWriter(&buffer)
-	defer func(writer *gzip.Writer) {
-		e := writer.Close()
-		err = e
-		if err != nil {
-			return
-		}
-	}(writer)
-
-	_, err = writer.Write(input)
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile("log.txt.gz", buffer.Bytes(), 0666)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

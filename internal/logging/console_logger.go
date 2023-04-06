@@ -2,7 +2,7 @@ package logging
 
 import (
 	"fmt"
-	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/configuration"
+	"github.com/spf13/viper"
 	"log"
 	"os"
 	"sync"
@@ -82,13 +82,7 @@ func GetConsoleLoggerInstance() (*ConsoleLogger, error) {
 	if consoleLoggerInstance == nil {
 		once.Do(
 			func() {
-				var configurator *configuration.ConcreteConfigurator
-				configurator, err = configuration.GetInstance()
-				if err != nil {
-					return
-				}
-
-				levelString := configurator.GetConfig().Logging.LogLevel
+				levelString := viper.GetString("logging.log_level")
 
 				logFlag := log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix
 

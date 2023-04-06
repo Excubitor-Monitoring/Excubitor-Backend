@@ -2,7 +2,7 @@ package logging
 
 import (
 	"fmt"
-	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/configuration"
+	"github.com/spf13/viper"
 	"io"
 	"log"
 	"os"
@@ -67,12 +67,6 @@ func GetMultiLoggerInstance() (*MultiLogger, error) {
 	if MultiLoggerInstance == nil {
 		once.Do(
 			func() {
-				var configurator *configuration.ConcreteConfigurator
-				configurator, err = configuration.GetInstance()
-				if err != nil {
-					return
-				}
-
 				var file *os.File
 				file, err = os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 				if err != nil {
@@ -81,7 +75,7 @@ func GetMultiLoggerInstance() (*MultiLogger, error) {
 
 				multiWriter := io.MultiWriter(file, os.Stdout)
 
-				levelString := configurator.GetConfig().Logging.LogLevel
+				levelString := viper.GetString("logging.log_level")
 
 				logFlag := log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix
 				loggers := &loggerBundle{
