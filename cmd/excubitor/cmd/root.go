@@ -2,38 +2,17 @@ package cmd
 
 import (
 	"errors"
-	"fmt"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/spf13/viper"
 	"io/fs"
 	"os"
-	"strings"
 )
 
 func Execute() error {
 
 	var err error
 
-	if err = initConfig(); err != nil {
-		return err
-	}
-
-	var logger logging.Logger
-	loggingMethod := viper.GetString("logging.method")
-
-	switch strings.ToUpper(loggingMethod) {
-	case "CONSOLE":
-		logger, err = logging.GetConsoleLoggerInstance()
-		break
-	case "FILE":
-		logger, err = logging.GetFileLoggerInstance()
-		break
-	case "HYBRID":
-		logger, err = logging.GetMultiLoggerInstance()
-		break
-	default:
-		return fmt.Errorf("unknown logging method %s", loggingMethod)
-	}
+	logger, err := logging.GetLogger()
 
 	if err != nil {
 		return err
@@ -70,4 +49,11 @@ func initConfig() error {
 	}
 
 	return nil
+}
+
+func init() {
+	err := initConfig()
+	if err != nil {
+		panic(err)
+	}
 }
