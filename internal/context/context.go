@@ -50,6 +50,18 @@ func (ctx *Context) RegisterModule(module *Module) {
 	ctx.modules[module.name] = module
 }
 
+func (ctx *Context) GetModules() []string {
+	ctx.lock.RLock()
+	defer ctx.lock.RUnlock()
+
+	modules := []string{}
+	for module := range ctx.modules {
+		modules = append(modules, module)
+	}
+
+	return modules
+}
+
 func (ctx *Context) GetBroker() *pubsub.Broker {
 	return ctx.broker
 }
