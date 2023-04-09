@@ -1,6 +1,8 @@
 package logging
 
 import (
+	"fmt"
+	"github.com/spf13/viper"
 	"log"
 	"strings"
 )
@@ -80,4 +82,29 @@ type loggerBundle struct {
 	warnLogger  *log.Logger
 	errorLogger *log.Logger
 	fatalLogger *log.Logger
+}
+
+func GetLogger() (Logger, error) {
+	var logger Logger
+	var err error
+
+	loggingMethod := viper.GetString("logging.method")
+
+	switch strings.ToUpper(loggingMethod) {
+	case "CONSOLE":
+		logger, err = GetConsoleLoggerInstance()
+		break
+	case "FILE":
+		logger, err = GetFileLoggerInstance()
+		break
+	case "HYBRID":
+		logger, err = GetMultiLoggerInstance()
+		break
+	default:
+		fmt.Printf("Could not identify logging method %s! Falling back to console logging.\n", loggingMethod)
+		logger, err = GetConsoleLoggerInstance()
+		break
+	}
+
+	return logger, err
 }
