@@ -8,6 +8,7 @@ import (
 
 type Listener func(*Message)
 
+// Subscriber can listen to different monitors on a broker. Its messages channel will be updated whenever a new message is published with the associated broker.
 type Subscriber struct {
 	id       string
 	messages chan *Message
@@ -41,6 +42,7 @@ func (subscriber *Subscriber) removeMonitor(monitor string) {
 	delete(subscriber.monitors, monitor)
 }
 
+// GetMonitors returns a slice of all monitors the Subscriber is subscribed to.
 func (subscriber *Subscriber) GetMonitors() []string {
 	subscriber.lock.RLock()
 	defer subscriber.lock.RUnlock()
@@ -62,6 +64,7 @@ func (subscriber *Subscriber) signal(message *Message) {
 	}
 }
 
+// Listen listens for messages on the messages channel and calls a Listener function with the message as an argument.
 func (subscriber *Subscriber) Listen(listener Listener) {
 	for {
 		if message, ok := <-subscriber.messages; ok {
@@ -71,6 +74,7 @@ func (subscriber *Subscriber) Listen(listener Listener) {
 	}
 }
 
+// Destruct destructs a Subscriber
 func (subscriber *Subscriber) Destruct() {
 	subscriber.lock.RLock()
 	defer subscriber.lock.RUnlock()

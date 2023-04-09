@@ -10,12 +10,14 @@ var logger logging.Logger
 
 type Subscribers map[string]*Subscriber
 
+// Broker is used to interact with the pubsub architecture
 type Broker struct {
 	subscribers Subscribers
 	monitors    map[string]Subscribers
 	lock        sync.RWMutex
 }
 
+// NewBroker constructs a new Broker
 func NewBroker() *Broker {
 	return &Broker{
 		subscribers: Subscribers{},
@@ -23,6 +25,7 @@ func NewBroker() *Broker {
 	}
 }
 
+// AddSubscriber adds a new subscriber to the subscriber pool and returns its reference
 func (broker *Broker) AddSubscriber() *Subscriber {
 	broker.lock.Lock()
 	defer broker.lock.Unlock()
@@ -34,6 +37,7 @@ func (broker *Broker) AddSubscriber() *Subscriber {
 	return subscriber
 }
 
+// Subscribe can add a monitor to a given subscriber
 func (broker *Broker) Subscribe(subscriber *Subscriber, monitor string) {
 	broker.lock.Lock()
 	defer broker.lock.Unlock()
@@ -48,6 +52,7 @@ func (broker *Broker) Subscribe(subscriber *Subscriber, monitor string) {
 	broker.monitors[monitor][subscriber.id] = subscriber
 }
 
+// Unsubscribe removes a monitor from a given subscriber
 func (broker *Broker) Unsubscribe(subscriber *Subscriber, monitor string) {
 	broker.lock.RLock()
 	defer broker.lock.RUnlock()
@@ -58,6 +63,7 @@ func (broker *Broker) Unsubscribe(subscriber *Subscriber, monitor string) {
 	subscriber.removeMonitor(monitor)
 }
 
+// Publish publishes messages flagged with a given monitor to the pubsub architecture
 func (broker *Broker) Publish(monitor string, message string) {
 	broker.lock.RLock()
 	subscribers := broker.monitors[monitor]
