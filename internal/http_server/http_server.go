@@ -7,6 +7,7 @@ import (
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/models"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/spf13/viper"
+	"golang.org/x/net/websocket"
 	"net/http"
 )
 
@@ -16,10 +17,14 @@ func Start() error {
 	host := viper.GetString("http.host")
 	port := viper.GetInt("http.port")
 
+	context := ctx.GetContext()
+	logger = context.GetLogger()
+
 	logger.Debug(fmt.Sprintf("Starting HTTP Server on port %d", port))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/info", info)
+	mux.HandleFunc("/ws", wsInit)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
 	if err != nil {
 		return err
@@ -58,10 +63,8 @@ func info(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func init() {
-	var err error
-	logger, err = logging.GetLogger()
-	if err != nil {
-		panic(err)
-	}
+func wsInit(w http.ResponseWriter, r *http.Request) {
+	// TODO: Handle authentication here...
+	handler := websocket.Handler(handleWebsocket)
+	handler.ServeHTTP(w, r)
 }

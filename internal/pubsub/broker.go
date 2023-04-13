@@ -82,12 +82,3 @@ func (broker *Broker) Publish(monitor string, message string) {
 		})(subscriber)
 	}
 }
-
-func init() {
-	var err error
-	logger, err = logging.GetLogger()
-
-	if err != nil {
-		panic(err)
-	}
-}
