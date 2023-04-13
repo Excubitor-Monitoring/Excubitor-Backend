@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/models"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/spf13/viper"
 	"net/http"
@@ -31,7 +32,7 @@ func info(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
 		w.Header().Set("Content-Type", "application/json")
-		jsonResult, err := json.Marshal(ctx.GetContext().GetModules())
+		jsonResult, err := json.Marshal(models.NewInfoResponse("PAM", ctx.GetContext().GetModules()))
 		if err != nil {
 			return
 		}

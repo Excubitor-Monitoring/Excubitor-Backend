@@ -9,7 +9,7 @@ import (
 var logger logging.Logger
 
 type Module struct {
-	name string
+	Name string `json:"name"`
 }
 
 func NewModule(name string) *Module {
@@ -47,16 +47,16 @@ func (ctx *Context) RegisterModule(module *Module) {
 	ctx.lock.RLock()
 	defer ctx.lock.RUnlock()
 
-	ctx.modules[module.name] = module
+	ctx.modules[module.Name] = module
 }
 
-func (ctx *Context) GetModules() []string {
+func (ctx *Context) GetModules() []Module {
 	ctx.lock.RLock()
 	defer ctx.lock.RUnlock()
 
-	modules := []string{}
-	for module := range ctx.modules {
-		modules = append(modules, module)
+	var modules []Module
+	for _, module := range ctx.modules {
+		modules = append(modules, *module)
 	}
 
 	return modules
