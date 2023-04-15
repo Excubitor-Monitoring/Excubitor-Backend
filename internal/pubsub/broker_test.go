@@ -1,10 +1,21 @@
 package pubsub
 
 import (
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"sync"
 	"testing"
 )
+
+func TestMain(m *testing.M) {
+	err := logging.SetDefaultLogger("CONSOLE")
+	if err != nil {
+		panic(err)
+	}
+	code := m.Run()
+	os.Exit(code)
+}
 
 func TestNewBroker(t *testing.T) {
 	broker := NewBroker()
