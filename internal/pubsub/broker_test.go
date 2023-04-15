@@ -1,28 +1,27 @@
 package pubsub
 
 import (
-	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pubsub"
 	"github.com/stretchr/testify/assert"
 	"sync"
 	"testing"
 )
 
 func TestNewBroker(t *testing.T) {
-	broker := pubsub.NewBroker()
+	broker := NewBroker()
 
-	assert.IsType(t, &pubsub.Broker{}, broker)
+	assert.IsType(t, &Broker{}, broker)
 }
 
 func TestAddSubscriber(t *testing.T) {
-	broker := pubsub.NewBroker()
+	broker := NewBroker()
 	sub := broker.AddSubscriber()
 
-	assert.IsType(t, &pubsub.Subscriber{}, sub)
+	assert.IsType(t, &Subscriber{}, sub)
 	assert.Empty(t, sub.GetMonitors())
 }
 
 func TestSubscribe(t *testing.T) {
-	broker := pubsub.NewBroker()
+	broker := NewBroker()
 	sub := broker.AddSubscriber()
 
 	broker.Subscribe(sub, "Some Monitor")
@@ -30,7 +29,7 @@ func TestSubscribe(t *testing.T) {
 }
 
 func TestUnsubscribe(t *testing.T) {
-	broker := pubsub.NewBroker()
+	broker := NewBroker()
 	sub := broker.AddSubscriber()
 
 	broker.Subscribe(sub, "Some Monitor")
@@ -53,20 +52,20 @@ func TestPublish(t *testing.T) {
 	wg.Add(1)
 	wg1.Add(1)
 
-	broker := pubsub.NewBroker()
+	broker := NewBroker()
 	sub := broker.AddSubscriber()
 	sub1 := broker.AddSubscriber()
 
 	broker.Subscribe(sub, "Monitor")
 	broker.Subscribe(sub1, "Monitor")
 
-	go sub.Listen(func(message *pubsub.Message) {
+	go sub.Listen(func(message *Message) {
 		assert.Equal(t, message.GetMonitor(), "Monitor")
 		assert.Equal(t, message.GetMessageBody(), "Test Message!")
 		wg.Done()
 	})
 
-	go sub1.Listen(func(message *pubsub.Message) {
+	go sub1.Listen(func(message *Message) {
 		assert.Equal(t, message.GetMonitor(), "Monitor")
 		assert.Equal(t, message.GetMessageBody(), "Test Message!")
 		wg1.Done()
