@@ -52,13 +52,15 @@ func handleWebsocket(ws *websocket.Conn) {
 	subscriber := broker.AddSubscriber()
 
 	subscriber.Listen(func(m *pubsub.Message) {
-		content, err := newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()).bytes()
+		err = sendMessage(ws, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
 		if err != nil {
-			return
-		}
+			logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
 
-		_, err = ws.Write(content)
-		if err != nil {
+			err := ws.Close()
+			if err != nil {
+				logger.Error(fmt.Sprintf("Connection to %s couldn't be closed gracefully. Exiting connection...", clientAddress))
+			}
+
 			return
 		}
 	})
@@ -69,15 +71,15 @@ func handleWebsocket(ws *websocket.Conn) {
 		if err = websocket.Message.Receive(ws, &request); err != nil {
 			logger.Warn(fmt.Sprintf("Can't receive message from %s! Aborting connection...", clientAddress))
 
-			errMessage, err := newMessage(ERR, GetEmptyTarget(), "Undecipherable Message!").bytes()
+			err = sendMessage(ws, newMessage(ERR, GetEmptyTarget(), "Undecipherable Message!"))
 			if err != nil {
-				logger.Error(fmt.Sprintf("Creating error message to %s was unsuccessful. Forcing connection to close.", clientAddress))
-				return
-			}
+				logger.Error(fmt.Sprintf("Sending error message to %s was unsuccessful with reason %s. Forcing connection to close.", clientAddress, err.Error()))
 
-			_, err = ws.Write(errMessage)
-			if err != nil {
-				logger.Error(fmt.Sprintf("Sending error message to %s was unsuccessful. Forcing connection to close.", clientAddress))
+				err := ws.Close()
+				if err != nil {
+					logger.Error(fmt.Sprintf("WebSocket connection to %s couldn't be closed.", clientAddress))
+				}
+
 				return
 			}
 
@@ -90,15 +92,9 @@ func handleWebsocket(ws *websocket.Conn) {
 		if err = json.Unmarshal(request, content); err != nil {
 			logger.Warn(fmt.Sprintf("Can't decode message from %s! Dropping request...", clientAddress))
 
-			errMessage, err := newMessage(ERR, GetEmptyTarget(), "Bad Request!").bytes()
+			err := sendMessage(ws, newMessage(ERR, GetEmptyTarget(), "Bad Request!"))
 			if err != nil {
-				logger.Error(fmt.Sprintf("Creating error message for %s was unsuccessful. Forcing connection to close.", clientAddress))
-				return
-			}
-
-			_, err = ws.Write(errMessage)
-			if err != nil {
-				logger.Error(fmt.Sprintf("Sending error message to %s was unsuccessful. Forcing connection to close.", clientAddress))
+				logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason %s. Forcing connection to close.", clientAddress, err.Error()))
 				return
 			}
 
@@ -107,35 +103,49 @@ func handleWebsocket(ws *websocket.Conn) {
 
 		switch content.OpCode {
 		case GET:
+			err = sendMessage(ws, newMessage(ERR, content.Target, "This feature is not implemented yet!"))
+			if err != nil {
+				logger.Warn("Sending error message to", clientAddress, "was unsuccessful! Aborting connection...")
+				return
+			}
 			break
 		case SUB:
 			broker.Subscribe(subscriber, string(content.Target))
+			logger.Trace("Client", clientAddress, "subscribed to monitor", content.Target)
 			break
 		case UNSUB:
 			broker.Unsubscribe(subscriber, string(content.Target))
+			logger.Trace("Client", clientAddress, "unsubscribed from monitor", content.Target)
 			break
 		case HIST:
+			err = sendMessage(ws, newMessage(ERR, content.Target, "This feature is not implemented yet!"))
+			if err != nil {
+				logger.Warn("Sending error message to", clientAddress, "was unsuccessful! Aborting connection...")
+				return
+			}
 			break
 		case REPLY:
+			err = sendMessage(ws, newMessage(ERR, content.Target, "Clients may not send messages of the type REPLY!"))
 			break
 		case ERR:
+			err = sendMessage(ws, newMessage(ERR, content.Target, "Clients may not send messages of the type ERROR"))
 			break
 		}
-
-		/*if err = websocket.Message.Send(ws, request); err != nil {
-			logger.Warn(fmt.Sprintf("Can't send message to %s! Aborting connection...", clientAddress))
-
-			errMessage, err := newMessage(ERR, GetEmptyTarget(), "").bytes()
-			if err != nil {
-				logger.Error(fmt.Sprintf("Creating error message to %s was unsuccessful. Forcing connection to close.", clientAddress))
-				return
-			}
-
-			_, err = ws.Write(errMessage)
-			if err != nil {
-				logger.Error(fmt.Sprintf("Sending error message to %s was unsuccessful. Forcing connection to close.", clientAddress))
-				return
-			}
-		}*/
 	}
+}
+
+func sendMessage(ws *websocket.Conn, msg message) error {
+	var err error
+
+	bytes, err := msg.bytes()
+	if err != nil {
+		return err
+	}
+
+	_, err = ws.Write(bytes)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
