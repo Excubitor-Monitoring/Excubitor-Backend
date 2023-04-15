@@ -37,20 +37,6 @@ func GetContext() *Context {
 	return context
 }
 
-func (ctx *Context) RegisterLogger(logger logging.Logger) {
-	ctx.lock.RLock()
-	defer ctx.lock.RUnlock()
-
-	ctx.logger = logger
-}
-
-func (ctx *Context) GetLogger() logging.Logger {
-	ctx.lock.RLock()
-	defer ctx.lock.RUnlock()
-
-	return ctx.logger
-}
-
 func (ctx *Context) RegisterModule(module *Module) {
 	ctx.lock.RLock()
 	defer ctx.lock.RUnlock()

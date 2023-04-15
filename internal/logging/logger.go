@@ -2,9 +2,9 @@ package logging
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"log"
 	"strings"
+	"sync"
 )
 
 // LOG LEVELS
@@ -84,27 +84,41 @@ type loggerBundle struct {
 	fatalLogger *log.Logger
 }
 
-func GetLogger() (Logger, error) {
-	var logger Logger
-	var err error
+var DefaultLogger Logger
+var defaultLoggerLock sync.RWMutex
 
-	loggingMethod := viper.GetString("logging.method")
+func GetLogger() Logger {
+	defaultLoggerLock.RLock()
+	defer defaultLoggerLock.RUnlock()
+
+	return DefaultLogger
+}
+
+func SetDefaultLogger(loggingMethod string) error {
+	defaultLoggerLock.RLock()
+	defer defaultLoggerLock.RUnlock()
+
+	var err error
 
 	switch strings.ToUpper(loggingMethod) {
 	case "CONSOLE":
-		logger, err = GetConsoleLoggerInstance()
+		DefaultLogger, err = GetConsoleLoggerInstance()
 		break
 	case "FILE":
-		logger, err = GetFileLoggerInstance()
+		DefaultLogger, err = GetFileLoggerInstance()
 		break
 	case "HYBRID":
-		logger, err = GetMultiLoggerInstance()
+		DefaultLogger, err = GetMultiLoggerInstance()
 		break
 	default:
 		fmt.Printf("Could not identify logging method %s! Falling back to console logging.\n", loggingMethod)
-		logger, err = GetConsoleLoggerInstance()
+		DefaultLogger, err = GetConsoleLoggerInstance()
 		break
 	}
 
-	return logger, err
+	if err != nil {
+		DefaultLogger = nil
+	}
+
+	return err
 }

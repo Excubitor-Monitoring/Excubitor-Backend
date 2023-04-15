@@ -17,8 +17,7 @@ func Start() error {
 	host := viper.GetString("http.host")
 	port := viper.GetInt("http.port")
 
-	context := ctx.GetContext()
-	logger = context.GetLogger()
+	logger = logging.GetLogger()
 
 	logger.Debug(fmt.Sprintf("Starting HTTP Server on port %d", port))
 

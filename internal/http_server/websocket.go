@@ -8,15 +8,15 @@ import (
 	"golang.org/x/net/websocket"
 )
 
-type OpCode int
+type OpCode string
 
 const (
-	GET OpCode = iota
-	SUB
-	UNSUB
-	HIST
-	REPLY
-	ERR
+	GET   OpCode = "GET"
+	SUB   OpCode = "SUB"
+	UNSUB OpCode = "UNSUB"
+	HIST  OpCode = "HIST"
+	REPLY OpCode = "REPLY"
+	ERR   OpCode = "ERR"
 )
 
 type TargetAddress string
@@ -51,7 +51,7 @@ func handleWebsocket(ws *websocket.Conn) {
 	broker := ctx.GetContext().GetBroker()
 	subscriber := broker.AddSubscriber()
 
-	subscriber.Listen(func(m *pubsub.Message) {
+	go subscriber.Listen(func(m *pubsub.Message) {
 		err = sendMessage(ws, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
 		if err != nil {
 			logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))

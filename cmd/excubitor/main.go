@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/cmd/excubitor/cmd"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/spf13/viper"
 	"io/fs"
 	"os"
@@ -10,6 +11,10 @@ import (
 
 func main() {
 	if err := initConfig(); err != nil {
+		panic(err)
+	}
+
+	if err := initLogging(); err != nil {
 		panic(err)
 	}
 
@@ -36,6 +41,17 @@ func initConfig() error {
 	}
 
 	err := viper.ReadInConfig()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func initLogging() error {
+	method := viper.GetString("logging.method")
+
+	err := logging.SetDefaultLogger(method)
 	if err != nil {
 		return err
 	}
