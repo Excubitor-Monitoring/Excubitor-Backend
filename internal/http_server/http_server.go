@@ -6,8 +6,8 @@ import (
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/models"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
+	"github.com/gobwas/ws"
 	"github.com/spf13/viper"
-	"golang.org/x/net/websocket"
 	"net/http"
 )
 
@@ -64,6 +64,11 @@ func info(w http.ResponseWriter, r *http.Request) {
 
 func wsInit(w http.ResponseWriter, r *http.Request) {
 	// TODO: Handle authentication here...
-	handler := websocket.Handler(handleWebsocket)
-	handler.ServeHTTP(w, r)
+
+	conn, _, _, err := ws.UpgradeHTTP(r, w)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Connection from %s couldn't be upgraded: %s", r.RemoteAddr, err))
+	}
+
+	handleWebsocket(conn)
 }
