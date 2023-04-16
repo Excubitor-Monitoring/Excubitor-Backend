@@ -19,10 +19,11 @@ func Start() error {
 
 	logger = logging.GetLogger()
 
-	logger.Debug(fmt.Sprintf("Starting HTTP Server on port %d", port))
+	logger.Info(fmt.Sprintf("Starting HTTP Server on port %d", port))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/info", info)
+	mux.HandleFunc("/auth", handleAuthRequest)
 	mux.HandleFunc("/ws", wsInit)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
 	if err != nil {
