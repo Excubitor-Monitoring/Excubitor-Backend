@@ -6,8 +6,6 @@ import (
 	"sync"
 )
 
-var logger logging.Logger
-
 type Module struct {
 	Name string `json:"name"`
 }
@@ -19,6 +17,7 @@ func NewModule(name string) *Module {
 type Context struct {
 	broker  *pubsub.Broker
 	modules map[string]*Module
+	logger  logging.Logger
 	lock    sync.RWMutex
 }
 
@@ -29,13 +28,8 @@ func GetContext() *Context {
 
 	if context == nil {
 		once.Do(func() {
-
-			logger.Debug("Instantiating context!")
-
 			context = &Context{
-				pubsub.NewBroker(),
-				map[string]*Module{},
-				sync.RWMutex{},
+				modules: map[string]*Module{},
 			}
 		})
 	}
@@ -62,15 +56,16 @@ func (ctx *Context) GetModules() []Module {
 	return modules
 }
 
-func (ctx *Context) GetBroker() *pubsub.Broker {
-	return ctx.broker
+func (ctx *Context) RegisterBroker(broker *pubsub.Broker) {
+	ctx.lock.RLock()
+	defer ctx.lock.RUnlock()
+
+	ctx.broker = broker
 }
 
-func init() {
-	var err error
-	logger, err = logging.GetLogger()
+func (ctx *Context) GetBroker() *pubsub.Broker {
+	ctx.lock.RLock()
+	defer ctx.lock.RUnlock()
 
-	if err != nil {
-		panic(err)
-	}
+	return ctx.broker
 }

@@ -6,6 +6,7 @@ import (
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/models"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
+	"github.com/gobwas/ws"
 	"github.com/spf13/viper"
 	"net/http"
 )
@@ -16,10 +17,13 @@ func Start() error {
 	host := viper.GetString("http.host")
 	port := viper.GetInt("http.port")
 
+	logger = logging.GetLogger()
+
 	logger.Debug(fmt.Sprintf("Starting HTTP Server on port %d", port))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/info", info)
+	mux.HandleFunc("/ws", wsInit)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
 	if err != nil {
 		return err
@@ -58,10 +62,13 @@ func info(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func init() {
-	var err error
-	logger, err = logging.GetLogger()
+func wsInit(w http.ResponseWriter, r *http.Request) {
+	// TODO: Handle authentication here...
+
+	conn, _, _, err := ws.UpgradeHTTP(r, w)
 	if err != nil {
-		panic(err)
+		logger.Error(fmt.Sprintf("Connection from %s couldn't be upgraded: %s", r.RemoteAddr, err))
 	}
+
+	handleWebsocket(conn)
 }
