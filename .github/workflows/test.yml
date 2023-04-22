@@ -12,6 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - uses: Install PAM dependency
+        run: apt install libpam0g-devel
+
       - name: Set up Go ${{ matrix.go-version }}
         uses: actions/setup-go@v4
         with:
