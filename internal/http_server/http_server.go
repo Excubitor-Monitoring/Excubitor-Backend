@@ -19,11 +19,13 @@ func Start() error {
 
 	logger = logging.GetLogger()
 
-	logger.Debug(fmt.Sprintf("Starting HTTP Server on port %d", port))
+	logger.Info(fmt.Sprintf("Starting HTTP Server on port %d", port))
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/info", info)
-	mux.HandleFunc("/ws", wsInit)
+	mux.HandleFunc("/auth", handleAuthRequest)
+	mux.HandleFunc("/auth/refresh", handleRefreshRequest)
+	mux.Handle("/ws", auth(http.HandlerFunc(wsInit)))
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
 	if err != nil {
 		return err
@@ -63,8 +65,6 @@ func info(w http.ResponseWriter, r *http.Request) {
 }
 
 func wsInit(w http.ResponseWriter, r *http.Request) {
-	// TODO: Handle authentication here...
-
 	conn, _, _, err := ws.UpgradeHTTP(r, w)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Connection from %s couldn't be upgraded: %s", r.RemoteAddr, err))
