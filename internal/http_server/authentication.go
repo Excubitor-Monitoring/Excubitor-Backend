@@ -63,8 +63,6 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 			pamCredentials := pam.PAMPasswordCredentials{Username: username, Password: password}
 
 			if pamCredentials.Authenticate() {
-				logger.Info("Logged in successfully")
-
 				accessTokenClaims := jwt.MapClaims{
 					"iss": "excubitor-backend",
 					"sub": username,
@@ -109,7 +107,6 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			} else {
-				logger.Info("Login attempt was unsuccessful")
 				ReturnError(w, r, http.StatusUnauthorized, "Invalid username or password!")
 				return
 			}
