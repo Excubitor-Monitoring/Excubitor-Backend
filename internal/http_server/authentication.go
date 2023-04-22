@@ -2,6 +2,7 @@ package http_server
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pam"
 	"github.com/golang-jwt/jwt/v5"
@@ -137,17 +138,14 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
 
 	if err != nil {
-		switch err {
-		case jwt.ErrTokenExpired:
+		if errors.Is(err, jwt.ErrTokenExpired) {
 			logger.Debug(fmt.Sprintf("Attempt to refresh access token with expired token from %s!", r.RemoteAddr))
 			ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
 			return
-		case jwt.ErrSignatureInvalid:
-			logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s! Token: %s", r.RemoteAddr, token))
-		case jwt.ErrTokenInvalidClaims:
-			logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token type from %s!", r.RemoteAddr))
-		default:
-			logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s - Token: %s", r.RemoteAddr, err, token))
+		} else if errors.Is(err, jwt.ErrSignatureInvalid) {
+			logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s!", r.RemoteAddr))
+		} else {
+			logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s", r.RemoteAddr, err))
 		}
 
 		ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
@@ -157,6 +155,8 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	username, err := jwtToken.Claims.GetSubject()
 	if err != nil {
 		logger.Warn(fmt.Sprintf("Couldn't read subject claim of refresh token from %s! Reason: %s", r.RemoteAddr, err))
+		ReturnError(w, r, http.StatusBadRequest, "Token has no subject!")
+		return
 	}
 
 	accessTokenClaims := jwt.MapClaims{
@@ -204,17 +204,14 @@ func auth(next http.Handler) http.Handler {
 		}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
 
 		if err != nil {
-			switch err {
-			case jwt.ErrTokenExpired:
+			if errors.Is(err, jwt.ErrTokenExpired) {
 				logger.Debug(fmt.Sprintf("Attempt to authenticate with expired token from %s!", r.RemoteAddr))
 				ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
 				return
-			case jwt.ErrSignatureInvalid:
-				logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s! Token: %s", r.RemoteAddr, token))
-			case jwt.ErrTokenInvalidClaims:
-				logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token type from %s!", r.RemoteAddr))
-			default:
-				logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s - Token: %s", r.RemoteAddr, err, token))
+			} else if errors.Is(err, jwt.ErrSignatureInvalid) {
+				logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s!", r.RemoteAddr))
+			} else {
+				logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s", r.RemoteAddr, err))
 			}
 
 			ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
