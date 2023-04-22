@@ -79,6 +79,8 @@ func (subscriber *Subscriber) Destruct() {
 	subscriber.lock.RLock()
 	defer subscriber.lock.RUnlock()
 
+	logger.Trace(fmt.Sprintf("Destructing subscriber %s", subscriber.id))
+
 	subscriber.active = false
 	close(subscriber.messages)
 }

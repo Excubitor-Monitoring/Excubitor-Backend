@@ -113,48 +113,50 @@ func handleWebsocket(conn net.Conn) {
 
 		switch content.OpCode {
 		case GET:
-			err = sendMessage(conn, newMessage(ERR, content.Target, "This feature is not implemented yet!"))
-			if err != nil {
-				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
-				return
-			}
-			break
+			temporarySubscriber := broker.AddSubscriber()
+			logger.Trace(fmt.Sprintf("Added temporary subscriber to fulfill GET request from %s on monitor %s.", clientAddress, content.Target))
+
+			go temporarySubscriber.Listen(func(m *pubsub.Message) {
+				logger.Trace(fmt.Sprintf("Sending single message from %s to connection from %s", m.GetMonitor(), clientAddress))
+				temporarySubscriber.Destruct()
+				err = sendMessage(conn, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
+				if err != nil {
+					logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
+					return
+				}
+			})
+
+			broker.Subscribe(temporarySubscriber, string(content.Target))
 		case SUB:
 			broker.Subscribe(subscriber, string(content.Target))
 			logger.Trace("Client", clientAddress, "subscribed to monitor", content.Target)
-			break
 		case UNSUB:
 			broker.Unsubscribe(subscriber, string(content.Target))
 			logger.Trace("Client", clientAddress, "unsubscribed from monitor", content.Target)
-			break
 		case HIST:
 			err = sendMessage(conn, newMessage(ERR, content.Target, "This feature is not implemented yet!"))
 			if err != nil {
 				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
 				return
 			}
-			break
 		case REPLY:
 			err = sendMessage(conn, newMessage(ERR, content.Target, "Clients may not send messages of the type REPLY!"))
 			if err != nil {
 				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
 				return
 			}
-			break
 		case ERR:
 			err = sendMessage(conn, newMessage(ERR, content.Target, "Clients may not send messages of the type ERROR"))
 			if err != nil {
 				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
 				return
 			}
-			break
 		default:
 			err = sendMessage(conn, newMessage(ERR, content.Target, fmt.Sprintf("Unsupported Operation %s!", content.OpCode)))
 			if err != nil {
 				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
 				return
 			}
-			break
 		}
 	}
 }
