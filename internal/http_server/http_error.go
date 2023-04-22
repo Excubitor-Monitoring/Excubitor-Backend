@@ -22,6 +22,7 @@ func NewHTTPError(message string, path string) Error {
 
 func ReturnError(w http.ResponseWriter, r *http.Request, status int, reason string) {
 	w.WriteHeader(status)
+	w.Header().Set("Content-Type", "application/json")
 
 	httpError := NewHTTPError(reason, r.RequestURI)
 
