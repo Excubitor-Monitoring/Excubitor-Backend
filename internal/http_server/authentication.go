@@ -120,6 +120,11 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
+	if r.Method != http.MethodPost {
+		ReturnError(w, r, http.StatusMethodNotAllowed, "Method is not allowed!")
+		return
+	}
+
 	authorization := r.Header.Get("Authorization")
 
 	if !strings.HasPrefix(authorization, "Bearer ") {
