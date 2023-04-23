@@ -15,6 +15,7 @@ type Subscriber struct {
 	monitors map[string]bool
 	active   bool
 	lock     sync.RWMutex
+	wg       sync.WaitGroup
 }
 
 func newSubscriber() (string, *Subscriber) {
@@ -60,6 +61,9 @@ func (subscriber *Subscriber) signal(message *Message) {
 	defer subscriber.lock.RUnlock()
 
 	if subscriber.active {
+		subscriber.wg.Add(1)
+		defer subscriber.wg.Done()
+
 		subscriber.messages <- message
 	}
 }
@@ -82,5 +86,9 @@ func (subscriber *Subscriber) Destruct() {
 	logger.Trace(fmt.Sprintf("Destructing subscriber %s", subscriber.id))
 
 	subscriber.active = false
-	close(subscriber.messages)
+
+	go func() {
+		subscriber.wg.Wait()
+		close(subscriber.messages)
+	}()
 }
