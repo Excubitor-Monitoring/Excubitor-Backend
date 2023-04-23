@@ -10,7 +10,7 @@ import (
 )
 
 func TestInfo(t *testing.T) {
-	ctx.GetContext().RegisterModule(ctx.NewModule("TestModule"))
+	ctx.GetContext().RegisterModule(ctx.NewModule("TestModule", func() {}))
 
 	req := httptest.NewRequest(http.MethodGet, "/info", nil)
 	w := httptest.NewRecorder()
