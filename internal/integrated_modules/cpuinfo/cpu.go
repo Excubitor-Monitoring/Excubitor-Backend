@@ -16,6 +16,7 @@ type cpu struct {
 	Flags      string  `json:"flags"`
 }
 
+// readCPU parses a single thread/core from a cpuinfo file into a cpu struct.
 func readCPU(paragraph string) (*cpu, error) {
 	id, err := getUInt("processor", paragraph)
 	if err != nil {
