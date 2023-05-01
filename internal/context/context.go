@@ -7,11 +7,12 @@ import (
 )
 
 type Module struct {
-	Name string `json:"name"`
+	Name         string `json:"name"`
+	tickFunction func()
 }
 
-func NewModule(name string) *Module {
-	return &Module{name}
+func NewModule(name string, tickFunction func()) *Module {
+	return &Module{name, tickFunction}
 }
 
 type Context struct {
@@ -41,7 +42,13 @@ func (ctx *Context) RegisterModule(module *Module) {
 	ctx.lock.RLock()
 	defer ctx.lock.RUnlock()
 
+	var once sync.Once
+
 	ctx.modules[module.Name] = module
+
+	once.Do(func() {
+		startClock()
+	})
 }
 
 func (ctx *Context) GetModules() []Module {

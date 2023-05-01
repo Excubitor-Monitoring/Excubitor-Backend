@@ -8,6 +8,7 @@ import (
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"net"
+	"sync"
 )
 
 type OpCode string
@@ -114,16 +115,23 @@ func handleWebsocket(conn net.Conn) {
 		switch content.OpCode {
 		case GET:
 			temporarySubscriber := broker.AddSubscriber()
+
+			var receiveOnce sync.Once
+
 			logger.Trace(fmt.Sprintf("Added temporary subscriber to fulfill GET request from %s on monitor %s.", clientAddress, content.Target))
 
 			go temporarySubscriber.Listen(func(m *pubsub.Message) {
-				logger.Trace(fmt.Sprintf("Sending single message from %s to connection from %s", m.GetMonitor(), clientAddress))
-				temporarySubscriber.Destruct()
-				err = sendMessage(conn, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
-				if err != nil {
-					logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
-					return
-				}
+				receiveOnce.Do(func() {
+					logger.Trace(fmt.Sprintf("Sending single message from %s to connection from %s", m.GetMonitor(), clientAddress))
+					broker.Unsubscribe(temporarySubscriber, string(content.Target))
+					defer temporarySubscriber.Destruct()
+
+					err = sendMessage(conn, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
+					if err != nil {
+						logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
+						return
+					}
+				})
 			})
 
 			broker.Subscribe(temporarySubscriber, string(content.Target))

@@ -15,6 +15,7 @@ type Subscriber struct {
 	monitors map[string]bool
 	active   bool
 	lock     sync.RWMutex
+	wg       sync.WaitGroup
 }
 
 func newSubscriber() (string, *Subscriber) {
@@ -60,6 +61,9 @@ func (subscriber *Subscriber) signal(message *Message) {
 	defer subscriber.lock.RUnlock()
 
 	if subscriber.active {
+		subscriber.wg.Add(1)
+		defer subscriber.wg.Done()
+
 		subscriber.messages <- message
 	}
 }
@@ -67,6 +71,10 @@ func (subscriber *Subscriber) signal(message *Message) {
 // Listen listens for messages on the messages channel and calls a Listener function with the message as an argument.
 func (subscriber *Subscriber) Listen(listener Listener) {
 	for {
+		if !subscriber.active {
+			break
+		}
+
 		if message, ok := <-subscriber.messages; ok {
 			logger.Trace(fmt.Sprintf("Subscriber %s received message from %s: %s", subscriber.id, message.GetMonitor(), message.GetMessageBody()))
 			listener(message)
@@ -82,5 +90,9 @@ func (subscriber *Subscriber) Destruct() {
 	logger.Trace(fmt.Sprintf("Destructing subscriber %s", subscriber.id))
 
 	subscriber.active = false
-	close(subscriber.messages)
+
+	go func() {
+		subscriber.wg.Wait()
+		close(subscriber.messages)
+	}()
 }
