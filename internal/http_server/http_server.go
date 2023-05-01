@@ -26,7 +26,10 @@ func Start() error {
 	mux.HandleFunc("/auth", handleAuthRequest)
 	mux.HandleFunc("/auth/refresh", handleRefreshRequest)
 	mux.Handle("/ws", auth(http.HandlerFunc(wsInit)))
-	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
+
+	cors := getCORSHandler()
+
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), cors.Handler(mux))
 	if err != nil {
 		return err
 	}

@@ -32,7 +32,9 @@ func initConfig() error {
 	viper.SetDefault("logging.method", "CONSOLE")
 	viper.SetDefault("http.port", 8080)
 	viper.SetDefault("http.host", "localhost")
-	viper.SetDefault("http.cors.allowed_origin", "*")
+	viper.SetDefault("http.cors.allowed_origins", []string{"*"})
+	viper.SetDefault("http.cors.allowed_methods", []string{"GET", "POST"})
+	viper.SetDefault("http.cors.allowed_headers", []string{"Origin", "Content-Type", "Authorization"})
 	viper.SetDefault("http.auth.jwt.secret", "")
 
 	if _, err := os.Stat("config.yml"); errors.Is(err, fs.ErrNotExist) {
