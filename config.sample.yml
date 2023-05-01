@@ -1,0 +1,25 @@
+# LOGGING CONFIGURATION
+# Available log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+# Available log methods: CONSOLE, FILE, HYBRID
+logging:
+    log_level: INFO
+    method: CONSOLE
+# HTTP CONFIGURATION
+#
+http:
+    host: 0.0.0.0
+    port: 8080
+    cors:
+        allowed_origins:
+            - '*'
+        allowed_methods:
+            - 'GET'
+            - 'POST'
+        allowed_headers:
+            - 'Origin'
+            - 'Content-Type'
+            - 'Authorization'
+    auth:
+        jwt:
+            access_token_secret: "" # Set me before application startup
+            refresh_token_secret: "" # Set me before application startup

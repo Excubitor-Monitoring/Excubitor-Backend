@@ -2,7 +2,6 @@ package logging
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"log"
 	"os"
 	"sync"
@@ -82,7 +81,7 @@ func GetConsoleLoggerInstance() (*ConsoleLogger, error) {
 	if consoleLoggerInstance == nil {
 		once.Do(
 			func() {
-				levelString := viper.GetString("logging.log_level")
+				levelString := k.String("logging.log_level")
 
 				logFlag := log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix
 

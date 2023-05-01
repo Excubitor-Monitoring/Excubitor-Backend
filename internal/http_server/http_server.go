@@ -3,19 +3,20 @@ package http_server
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/models"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/gobwas/ws"
-	"github.com/spf13/viper"
 	"net/http"
 )
 
 var logger logging.Logger
+var k = config.GetConfig()
 
 func Start() error {
-	host := viper.GetString("http.host")
-	port := viper.GetInt("http.port")
+	host := k.String("http.host")
+	port := k.Int("http.port")
 
 	logger = logging.GetLogger()
 
