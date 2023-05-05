@@ -5,6 +5,6 @@ build:
 	echo "Compiling project for current platform"
 	go build -o bin/excubitor-backend cmd/excubitor/main.go
 run:
-	go run cmd/excubitor/main.go
+	go run cmd/main.go
 test:
 	go test -v ./...

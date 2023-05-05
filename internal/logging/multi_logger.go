@@ -2,7 +2,6 @@ package logging
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
 	"io"
 	"log"
 	"os"
@@ -75,7 +74,7 @@ func GetMultiLoggerInstance() (*MultiLogger, error) {
 
 				multiWriter := io.MultiWriter(file, os.Stdout)
 
-				levelString := viper.GetString("logging.log_level")
+				levelString := k.String("logging.log_level")
 
 				logFlag := log.Ldate | log.Ltime | log.Lshortfile | log.Lmsgprefix
 				loggers := &loggerBundle{

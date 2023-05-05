@@ -2,10 +2,13 @@ package logging
 
 import (
 	"fmt"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	"log"
 	"strings"
 	"sync"
 )
+
+var k = config.GetConfig()
 
 // LOG LEVELS
 

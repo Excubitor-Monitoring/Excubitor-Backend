@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pam"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
 	"io"
 	"net/http"
 	"strings"
@@ -136,7 +135,7 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	token := strings.Split(authorization, "Bearer ")[1]
 
 	jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return []byte(viper.GetString("http.auth.jwt.refreshTokenSecret")), nil
+		return []byte(k.String("http.auth.jwt.refresh_token_secret")), nil
 	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
 
 	if err != nil {
@@ -227,7 +226,7 @@ func queryAuth(next http.Handler) http.Handler {
 
 func checkToken(w http.ResponseWriter, r *http.Request, token string) bool {
 	jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return []byte(viper.GetString("http.auth.jwt.accessTokenSecret")), nil
+		return []byte(k.String("http.auth.jwt.access_token_secret")), nil
 	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
 
 	if err != nil {

@@ -1,16 +1,16 @@
 package http_server
 
 import (
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
 )
 
 func signAccessToken(claims jwt.MapClaims) (string, error) {
-	return signToken(claims, []byte(viper.GetString("http.auth.jwt.accessTokenSecret")))
+	return signToken(claims, []byte(config.GetConfig().String("http.auth.jwt.access_token_secret")))
 }
 
 func signRefreshToken(claims jwt.MapClaims) (string, error) {
-	return signToken(claims, []byte(viper.GetString("http.auth.jwt.refreshTokenSecret")))
+	return signToken(claims, []byte(config.GetConfig().String("http.auth.jwt.refresh_token_secret")))
 }
 
 func signToken(claims jwt.MapClaims, key interface{}) (string, error) {

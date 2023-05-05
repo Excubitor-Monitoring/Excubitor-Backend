@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/spf13/viper"
+	"github.com/knadh/koanf/providers/confmap"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -285,8 +285,14 @@ func TestHandleRefreshRequestInvalidTokenExpired(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token, err := signRefreshToken(jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -336,8 +342,14 @@ func TestHandleRefreshRequestInvalidTokenInvalidSignature(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -388,8 +400,14 @@ func TestHandleRefreshRequest(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token, err := signRefreshToken(jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -431,7 +449,7 @@ func TestHandleRefreshRequest(t *testing.T) {
 	}
 
 	parsedToken, err := jwt.Parse(responseObject.AccessToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(viper.GetString("http.auth.jwt.accessTokenSecret")), nil
+		return []byte(k.String("http.auth.jwt.access_token_secret")), nil
 	})
 	if err != nil {
 		t.Error(err)
@@ -541,8 +559,14 @@ func TestBearerAuthTokenExpired(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token, err := signAccessToken(jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -593,8 +617,14 @@ func TestBearerAuthInvalidSignature(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -646,8 +676,14 @@ func TestBearerAuth(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token, err := signAccessToken(jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -730,8 +766,14 @@ func TestQueryAuthTokenExpired(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token, err := signAccessToken(jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -781,8 +823,14 @@ func TestQueryAuthInvalidSignature(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"iss": "excubitor-backend",
@@ -833,8 +881,14 @@ func TestQueryAuth(t *testing.T) {
 		return
 	}
 
-	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
-	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
 
 	token, err := signAccessToken(jwt.MapClaims{
 		"iss": "excubitor-backend",
