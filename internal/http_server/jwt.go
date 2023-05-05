@@ -6,11 +6,11 @@ import (
 )
 
 func signAccessToken(claims jwt.MapClaims) (string, error) {
-	return signToken(claims, []byte(config.GetConfig().String("http.auth.jwt.accessTokenSecret")))
+	return signToken(claims, []byte(config.GetConfig().String("http.auth.jwt.access_token_secret")))
 }
 
 func signRefreshToken(claims jwt.MapClaims) (string, error) {
-	return signToken(claims, []byte(config.GetConfig().String("http.auth.jwt.refreshTokenSecret")))
+	return signToken(claims, []byte(config.GetConfig().String("http.auth.jwt.refresh_token_secret")))
 }
 
 func signToken(claims jwt.MapClaims, key interface{}) (string, error) {

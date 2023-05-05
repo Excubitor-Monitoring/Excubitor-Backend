@@ -135,7 +135,7 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	token := strings.Split(authorization, "Bearer ")[1]
 
 	jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-		return []byte(k.String("http.auth.jwt.refreshTokenSecret")), nil
+		return []byte(k.String("http.auth.jwt.refresh_token_secret")), nil
 	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
 
 	if err != nil {
