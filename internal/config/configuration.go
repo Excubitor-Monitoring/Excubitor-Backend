@@ -25,7 +25,8 @@ func InitConfig() error {
 	err := k.Load(confmap.Provider(map[string]interface{}{
 		"logging.log_level":                  "INFO",
 		"logging.method":                     "CONSOLE",
-		"http.port":                          "0.0.0.0",
+		"http.host":                          "0.0.0.0",
+		"http.port":                          "8080",
 		"http.cors.allowed_origins":          []string{"*"},
 		"http.cors.allowed_methods":          []string{"GET", "POST"},
 		"http.cors.allowed_headers":          []string{"Origin", "Content-Type", "Authorization"},
@@ -62,7 +63,7 @@ func InitConfig() error {
 
 	// Load environment variables
 	err = k.Load(env.Provider("EXCUBITOR_", ".", func(s string) string {
-		return strings.Replace(strings.ToLower(strings.TrimPrefix(s, "EXCUBITOR_")), "_", ".", -1)
+		return strings.Replace(strings.Replace(strings.ToLower(strings.TrimPrefix(s, "EXCUBITOR_")), "_", ".", -1), "-", "_", -1)
 	}), nil)
 	if err != nil {
 		return fmt.Errorf("could not init environment variable configuration: %w", err)
