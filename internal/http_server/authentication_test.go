@@ -286,8 +286,8 @@ func TestHandleRefreshRequestInvalidTokenExpired(t *testing.T) {
 	}
 
 	err = k.Load(confmap.Provider(map[string]interface{}{
-		"http.auth.jwt.accessTokenSecret":  "123456",
-		"http.auth.jwt.refreshTokenSecret": "abcdef",
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
 	}, "."), nil)
 	if err != nil {
 		t.Error(err)
@@ -449,7 +449,7 @@ func TestHandleRefreshRequest(t *testing.T) {
 	}
 
 	parsedToken, err := jwt.Parse(responseObject.AccessToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(k.String("http.auth.jwt.accessTokenSecret")), nil
+		return []byte(k.String("http.auth.jwt.access_token_secret")), nil
 	})
 	if err != nil {
 		t.Error(err)
