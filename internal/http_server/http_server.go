@@ -26,7 +26,7 @@ func Start() error {
 	mux.HandleFunc("/info", info)
 	mux.HandleFunc("/auth", handleAuthRequest)
 	mux.HandleFunc("/auth/refresh", handleRefreshRequest)
-	mux.Handle("/ws", auth(http.HandlerFunc(wsInit)))
+	mux.Handle("/ws", queryAuth(http.HandlerFunc(wsInit)))
 
 	cors := getCORSHandler()
 

@@ -343,8 +343,8 @@ func TestHandleRefreshRequestInvalidTokenInvalidSignature(t *testing.T) {
 	}
 
 	err = k.Load(confmap.Provider(map[string]interface{}{
-		"http.auth.jwt.accessTokenSecret":  "123456",
-		"http.auth.jwt.refreshTokenSecret": "abcdef",
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
 	}, "."), nil)
 	if err != nil {
 		t.Error(err)
@@ -401,8 +401,8 @@ func TestHandleRefreshRequest(t *testing.T) {
 	}
 
 	err = k.Load(confmap.Provider(map[string]interface{}{
-		"http.auth.jwt.accessTokenSecret":  "123456",
-		"http.auth.jwt.refreshTokenSecret": "abcdef",
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
 	}, "."), nil)
 	if err != nil {
 		t.Error(err)
@@ -473,7 +473,7 @@ func TestHandleRefreshRequest(t *testing.T) {
 	assert.Equal(t, issuer, "excubitor-backend")
 }
 
-func TestAuthNoHeader(t *testing.T) {
+func TestBearerAuthNoHeader(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -485,7 +485,7 @@ func TestAuthNoHeader(t *testing.T) {
 	req.RemoteAddr = "SampleAddress"
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -511,7 +511,7 @@ func TestAuthNoHeader(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuthInvalidHeader(t *testing.T) {
+func TestBearerAuthInvalidHeader(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -524,7 +524,7 @@ func TestAuthInvalidHeader(t *testing.T) {
 	req.Header.Set("Authorization", "Basic dXNlcm5hbWU6cGFzc3dvcmQ=")
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -550,7 +550,7 @@ func TestAuthInvalidHeader(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuthTokenExpired(t *testing.T) {
+func TestBearerAuthTokenExpired(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -560,8 +560,8 @@ func TestAuthTokenExpired(t *testing.T) {
 	}
 
 	err = k.Load(confmap.Provider(map[string]interface{}{
-		"http.auth.jwt.accessTokenSecret":  "123456",
-		"http.auth.jwt.refreshTokenSecret": "abcdef",
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
 	}, "."), nil)
 	if err != nil {
 		t.Error(err)
@@ -583,7 +583,7 @@ func TestAuthTokenExpired(t *testing.T) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -608,7 +608,7 @@ func TestAuthTokenExpired(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuthInvalidSignature(t *testing.T) {
+func TestBearerAuthInvalidSignature(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -618,8 +618,8 @@ func TestAuthInvalidSignature(t *testing.T) {
 	}
 
 	err = k.Load(confmap.Provider(map[string]interface{}{
-		"http.auth.jwt.accessTokenSecret":  "123456",
-		"http.auth.jwt.refreshTokenSecret": "abcdef",
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
 	}, "."), nil)
 	if err != nil {
 		t.Error(err)
@@ -642,7 +642,7 @@ func TestAuthInvalidSignature(t *testing.T) {
 	req.Header.Set("Authorization", "Bearer "+signedToken)
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -667,7 +667,7 @@ func TestAuthInvalidSignature(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuth(t *testing.T) {
+func TestBearerAuth(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -677,8 +677,8 @@ func TestAuth(t *testing.T) {
 	}
 
 	err = k.Load(confmap.Provider(map[string]interface{}{
-		"http.auth.jwt.accessTokenSecret":  "123456",
-		"http.auth.jwt.refreshTokenSecret": "abcdef",
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
 	}, "."), nil)
 	if err != nil {
 		t.Error(err)
@@ -695,12 +695,216 @@ func TestAuth(t *testing.T) {
 		return
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint", nil)
 	req.RemoteAddr = "SampleAddress"
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
 
-	handler := auth(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	handler := bearerAuth(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		_, err := writer.Write([]byte{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}))
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(res.Body)
+
+	assert.Equal(t, http.StatusOK, res.StatusCode)
+}
+
+func TestQueryAuthNoToken(t *testing.T) {
+	var err error
+
+	logger, err = logging.GetConsoleLoggerInstance()
+	if err != nil {
+		t.Error(err)
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint?token=", nil)
+	req.RemoteAddr = "SampleAddress"
+	w := httptest.NewRecorder()
+
+	handler := queryAuth(nil)
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(res.Body)
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	httpError := parseHTTPError(body)
+
+	assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+	assert.Equal(t, "Token of invalid format!", httpError.Message)
+	assert.Equal(t, "/someEndpoint?token=", httpError.Path)
+	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+}
+
+func TestQueryAuthTokenExpired(t *testing.T) {
+	var err error
+
+	logger, err = logging.GetConsoleLoggerInstance()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	token, err := signAccessToken(jwt.MapClaims{
+		"iss": "excubitor-backend",
+		"sub": "testuser",
+		"exp": time.Now().Add(-30 * time.Minute).Unix(),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint?token="+token, nil)
+	req.RemoteAddr = "SampleAddress"
+	w := httptest.NewRecorder()
+
+	handler := queryAuth(nil)
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(res.Body)
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	httpError := parseHTTPError(body)
+
+	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	assert.Equal(t, "Token expired!", httpError.Message)
+	assert.Equal(t, "/someEndpoint?token="+token, httpError.Path)
+	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+}
+
+func TestQueryAuthInvalidSignature(t *testing.T) {
+	var err error
+
+	logger, err = logging.GetConsoleLoggerInstance()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iss": "excubitor-backend",
+		"sub": "testuser",
+		"exp": time.Now().Add(-4 * time.Hour).Unix(),
+	})
+	signedToken, err := token.SignedString([]byte("someOtherKey"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint?token="+signedToken, nil)
+	req.RemoteAddr = "SampleAddress"
+	w := httptest.NewRecorder()
+
+	handler := queryAuth(nil)
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(res.Body)
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	httpError := parseHTTPError(body)
+
+	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	assert.Equal(t, "Invalid token!", httpError.Message)
+	assert.Equal(t, "/someEndpoint?token="+signedToken, httpError.Path)
+	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+}
+
+func TestQueryAuth(t *testing.T) {
+	var err error
+
+	logger, err = logging.GetConsoleLoggerInstance()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	err = k.Load(confmap.Provider(map[string]interface{}{
+		"http.auth.jwt.access_token_secret":  "123456",
+		"http.auth.jwt.refresh_token_secret": "abcdef",
+	}, "."), nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	token, err := signAccessToken(jwt.MapClaims{
+		"iss": "excubitor-backend",
+		"sub": "testuser",
+		"exp": time.Now().Add(30 * time.Minute).Unix(),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint?token="+token, nil)
+	req.RemoteAddr = "SampleAddress"
+	w := httptest.NewRecorder()
+
+	handler := queryAuth(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		_, err := writer.Write([]byte{})
 		if err != nil {
 			t.Error(err)
