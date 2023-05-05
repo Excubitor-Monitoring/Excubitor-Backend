@@ -455,7 +455,7 @@ func TestHandleRefreshRequest(t *testing.T) {
 	assert.Equal(t, issuer, "excubitor-backend")
 }
 
-func TestAuthNoHeader(t *testing.T) {
+func TestBearerAuthNoHeader(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -467,7 +467,7 @@ func TestAuthNoHeader(t *testing.T) {
 	req.RemoteAddr = "SampleAddress"
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -506,7 +506,7 @@ func TestAuthInvalidHeader(t *testing.T) {
 	req.Header.Set("Authorization", "Basic dXNlcm5hbWU6cGFzc3dvcmQ=")
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -559,7 +559,7 @@ func TestAuthTokenExpired(t *testing.T) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -612,7 +612,7 @@ func TestAuthInvalidSignature(t *testing.T) {
 	req.Header.Set("Authorization", "Bearer "+signedToken)
 	w := httptest.NewRecorder()
 
-	handler := auth(nil)
+	handler := bearerAuth(nil)
 	handler.ServeHTTP(w, req)
 
 	res := w.Result()
@@ -664,7 +664,7 @@ func TestAuth(t *testing.T) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
 
-	handler := auth(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+	handler := bearerAuth(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		_, err := writer.Write([]byte{})
 		if err != nil {
 			t.Error(err)
