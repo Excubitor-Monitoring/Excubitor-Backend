@@ -201,33 +201,10 @@ func bearerAuth(next http.Handler) http.Handler {
 
 		token := strings.Split(authorization, "Bearer ")[1]
 
-		jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-			return []byte(viper.GetString("http.auth.jwt.accessTokenSecret")), nil
-		}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
-
-		if err != nil {
-			if errors.Is(err, jwt.ErrTokenExpired) {
-				logger.Debug(fmt.Sprintf("Attempt to authenticate with expired token from %s!", r.RemoteAddr))
-				ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
-				return
-			} else if errors.Is(err, jwt.ErrSignatureInvalid) {
-				logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s!", r.RemoteAddr))
-			} else {
-				logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s", r.RemoteAddr, err))
-			}
-
-			ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
-			return
+		if checkToken(w, r, token) {
+			next.ServeHTTP(w, r)
 		}
 
-		user, err := jwtToken.Claims.GetSubject()
-		if err != nil {
-			logger.Warn(fmt.Sprintf("Couldn't read token subject from %s!", user))
-		}
-
-		logger.Trace(fmt.Sprintf("User %s authenticated successfully using JWT token!", user))
-
-		next.ServeHTTP(w, r)
 	})
 }
 
@@ -241,32 +218,39 @@ func queryAuth(next http.Handler) http.Handler {
 			return
 		}
 
-		jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
-			return []byte(viper.GetString("http.auth.jwt.accessTokenSecret")), nil
-		}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
-
-		if err != nil {
-			if errors.Is(err, jwt.ErrTokenExpired) {
-				logger.Debug(fmt.Sprintf("Attempt to authenticate with expired token from %s!", r.RemoteAddr))
-				ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
-				return
-			} else if errors.Is(err, jwt.ErrSignatureInvalid) {
-				logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s!", r.RemoteAddr))
-			} else {
-				logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s", r.RemoteAddr, err))
-			}
-
-			ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
-			return
+		if checkToken(w, r, token) {
+			next.ServeHTTP(w, r)
 		}
 
-		user, err := jwtToken.Claims.GetSubject()
-		if err != nil {
-			logger.Warn(fmt.Sprintf("Couldn't read token subject from %s!", user))
-		}
-
-		logger.Trace(fmt.Sprintf("User %s authenticated successfully using JWT token!", user))
-
-		next.ServeHTTP(w, r)
 	})
+}
+
+func checkToken(w http.ResponseWriter, r *http.Request, token string) bool {
+	jwtToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		return []byte(viper.GetString("http.auth.jwt.accessTokenSecret")), nil
+	}, jwt.WithValidMethods([]string{"HS256"}), jwt.WithIssuer("excubitor-backend"))
+
+	if err != nil {
+		if errors.Is(err, jwt.ErrTokenExpired) {
+			logger.Debug(fmt.Sprintf("Attempt to authenticate with expired token from %s!", r.RemoteAddr))
+			ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
+			return false
+		} else if errors.Is(err, jwt.ErrSignatureInvalid) {
+			logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s!", r.RemoteAddr))
+		} else {
+			logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s", r.RemoteAddr, err))
+		}
+
+		ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
+		return false
+	}
+
+	user, err := jwtToken.Claims.GetSubject()
+	if err != nil {
+		logger.Warn(fmt.Sprintf("Couldn't read token subject from %s!", user))
+	}
+
+	logger.Trace(fmt.Sprintf("User %s authenticated successfully using JWT token!", user))
+
+	return true
 }

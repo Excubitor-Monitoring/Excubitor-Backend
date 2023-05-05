@@ -493,7 +493,7 @@ func TestBearerAuthNoHeader(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuthInvalidHeader(t *testing.T) {
+func TestBearerAuthInvalidHeader(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -532,7 +532,7 @@ func TestAuthInvalidHeader(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuthTokenExpired(t *testing.T) {
+func TestBearerAuthTokenExpired(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -584,7 +584,7 @@ func TestAuthTokenExpired(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuthInvalidSignature(t *testing.T) {
+func TestBearerAuthInvalidSignature(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -637,7 +637,7 @@ func TestAuthInvalidSignature(t *testing.T) {
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 }
 
-func TestAuth(t *testing.T) {
+func TestBearerAuth(t *testing.T) {
 	var err error
 
 	logger, err = logging.GetConsoleLoggerInstance()
@@ -659,7 +659,7 @@ func TestAuth(t *testing.T) {
 		return
 	}
 
-	req := httptest.NewRequest(http.MethodPost, "/auth/refresh", nil)
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint", nil)
 	req.RemoteAddr = "SampleAddress"
 	req.Header.Set("Authorization", "Bearer "+token)
 	w := httptest.NewRecorder()
@@ -719,4 +719,153 @@ func TestQueryAuthNoToken(t *testing.T) {
 	assert.Equal(t, "Token of invalid format!", httpError.Message)
 	assert.Equal(t, "/someEndpoint?token=", httpError.Path)
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+}
+
+func TestQueryAuthTokenExpired(t *testing.T) {
+	var err error
+
+	logger, err = logging.GetConsoleLoggerInstance()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
+	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+
+	token, err := signAccessToken(jwt.MapClaims{
+		"iss": "excubitor-backend",
+		"sub": "testuser",
+		"exp": time.Now().Add(-30 * time.Minute).Unix(),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint?token="+token, nil)
+	req.RemoteAddr = "SampleAddress"
+	w := httptest.NewRecorder()
+
+	handler := queryAuth(nil)
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(res.Body)
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	httpError := parseHTTPError(body)
+
+	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	assert.Equal(t, "Token expired!", httpError.Message)
+	assert.Equal(t, "/someEndpoint?token="+token, httpError.Path)
+	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+}
+
+func TestQueryAuthInvalidSignature(t *testing.T) {
+	var err error
+
+	logger, err = logging.GetConsoleLoggerInstance()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
+	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"iss": "excubitor-backend",
+		"sub": "testuser",
+		"exp": time.Now().Add(-4 * time.Hour).Unix(),
+	})
+	signedToken, err := token.SignedString([]byte("someOtherKey"))
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint?token="+signedToken, nil)
+	req.RemoteAddr = "SampleAddress"
+	w := httptest.NewRecorder()
+
+	handler := queryAuth(nil)
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(res.Body)
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	httpError := parseHTTPError(body)
+
+	assert.Equal(t, http.StatusUnauthorized, res.StatusCode)
+	assert.Equal(t, "Invalid token!", httpError.Message)
+	assert.Equal(t, "/someEndpoint?token="+signedToken, httpError.Path)
+	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+}
+
+func TestQueryAuth(t *testing.T) {
+	var err error
+
+	logger, err = logging.GetConsoleLoggerInstance()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	viper.SetDefault("http.auth.jwt.accessTokenSecret", "123456")
+	viper.SetDefault("http.auth.jwt.refreshTokenSecret", "abcdef")
+
+	token, err := signAccessToken(jwt.MapClaims{
+		"iss": "excubitor-backend",
+		"sub": "testuser",
+		"exp": time.Now().Add(30 * time.Minute).Unix(),
+	})
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/someEndpoint?token="+token, nil)
+	req.RemoteAddr = "SampleAddress"
+	w := httptest.NewRecorder()
+
+	handler := queryAuth(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		_, err := writer.Write([]byte{})
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}))
+	handler.ServeHTTP(w, req)
+
+	res := w.Result()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			t.Error(err)
+		}
+	}(res.Body)
+
+	assert.Equal(t, http.StatusOK, res.StatusCode)
 }
