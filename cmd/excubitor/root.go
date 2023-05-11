@@ -13,7 +13,7 @@ func Execute() error {
 	var err error
 
 	if err := config.InitConfig(); err != nil {
-		panic(err)
+		return err
 	}
 	if err := initLogging(); err != nil {
 		panic(err)
@@ -24,11 +24,12 @@ func Execute() error {
 		return err
 	}
 
+	logger.Debug("Loading context...")
 	context := ctx.GetContext()
 	context.RegisterModule(ctx.NewModule("main", func() {
-		logger.Trace("Tick!")
 	}))
 	context.RegisterModule(ctx.NewModule("cpu", cpuinfo.Tick))
+	logger.Debug("Registering broker...")
 	context.RegisterBroker(pubsub.NewBroker())
 
 	logger.Debug("Starting HTTP Server!")

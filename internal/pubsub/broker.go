@@ -73,14 +73,16 @@ func (broker *Broker) Publish(monitor string, message string) {
 	subscribers := broker.monitors[monitor]
 	broker.lock.RUnlock()
 
-	broker.logger.Trace(fmt.Sprintf("Publishing message %s on monitor %s.", message, monitor))
+	broker.logger.Trace(fmt.Sprintf("Publishing message on monitor %s.", monitor))
+
+	m := NewMessage(message, monitor)
 
 	for _, subscriber := range subscribers {
+		m := m // Reassign m so that it cannot be changed while the for loop is running...
+
 		if !subscriber.active {
 			continue
 		}
-
-		m := NewMessage(message, monitor)
 
 		go (func(s *Subscriber) {
 			s.signal(m)

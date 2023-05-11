@@ -23,3 +23,11 @@ http:
         jwt:
             access_token_secret: "" # Set me before application startup
             refresh_token_secret: "" # Set me before application startup
+# Data configuration
+data:
+    # This defines how often modules shall report their values.
+    # Default: 5s - Be careful with this setting as it will lead to larger database sizes
+    module_clock: 5s
+    # This defines how long data shall be stored in the database.
+    # Default: 30d
+    storage_time: 30d

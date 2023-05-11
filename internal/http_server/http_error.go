@@ -14,7 +14,7 @@ type Error struct {
 
 func NewHTTPError(message string, path string) Error {
 	return Error{
-		time.Now(),
+		time.Now().UTC(),
 		message,
 		path,
 	}
