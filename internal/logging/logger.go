@@ -90,6 +90,17 @@ type loggerBundle struct {
 var DefaultLogger Logger
 var defaultLoggerLock sync.RWMutex
 
+func InitLogging() error {
+	method := config.GetConfig().String("logging.method")
+
+	err := SetDefaultLogger(method)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetLogger() Logger {
 	defaultLoggerLock.RLock()
 	defer defaultLoggerLock.RUnlock()
