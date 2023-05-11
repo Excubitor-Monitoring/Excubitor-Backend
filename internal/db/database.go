@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	_ "github.com/mattn/go-sqlite3"
 	"sync"
@@ -30,8 +31,10 @@ func InitDatabase() error {
 	singletonOnce.Do(func() {
 		logger = logging.GetLogger()
 
+		file := config.GetConfig().String("data.database_file")
+
 		logger.Trace("Opening database connection!")
-		db, err := sql.Open("sqlite3", "history.db")
+		db, err := sql.Open("sqlite3", file)
 		if err != nil {
 			return
 		}

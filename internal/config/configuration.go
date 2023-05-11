@@ -34,6 +34,7 @@ func InitConfig() error {
 		"http.auth.jwt.refresh_token_secret": "",
 		"data.module_clock":                  "5s",
 		"data.storage_time":                  "30d",
+		"data.database_file":                 "history.db",
 	}, "."), nil)
 	if err != nil {
 		return err

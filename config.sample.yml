@@ -31,3 +31,6 @@ data:
     # This defines how long data shall be stored in the database.
     # Default: 30d
     storage_time: 30d
+    # This defines where the database file shall be stored.
+    # Default: history.db
+    database_file: 'history.db'
