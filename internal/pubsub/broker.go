@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"fmt"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/db"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"sync"
 )
@@ -88,4 +89,11 @@ func (broker *Broker) Publish(monitor string, message string) {
 			s.signal(m)
 		})(subscriber)
 	}
+
+	err := db.GetWriter().AddHistoryEntry(monitor, message)
+	if err != nil {
+		broker.logger.Error(err)
+		return
+	}
+
 }

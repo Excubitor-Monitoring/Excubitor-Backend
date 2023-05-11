@@ -12,6 +12,7 @@ require (
 	github.com/knadh/koanf/providers/file v0.1.0
 	github.com/knadh/koanf/providers/posflag v0.1.0
 	github.com/knadh/koanf/v2 v2.0.1
+	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/msteinert/pam v1.1.0
 	github.com/rs/cors v1.9.0
 	github.com/spf13/pflag v1.0.5

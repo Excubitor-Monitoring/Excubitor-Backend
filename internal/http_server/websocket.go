@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/db"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pubsub"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -142,9 +143,33 @@ func handleWebsocket(conn net.Conn) {
 			broker.Unsubscribe(subscriber, string(content.Target))
 			logger.Trace("Client", clientAddress, "unsubscribed from monitor", content.Target)
 		case HIST:
-			err = sendMessage(conn, newMessage(ERR, content.Target, "This feature is not implemented yet!"))
+			logger.Debug("Client", clientAddress, "requested history of monitor", content.Target)
+			reader := db.GetReader()
+			history, err := reader.GetHistoryEntriesByTarget(string(content.Target))
 			if err != nil {
-				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
+				logger.Error(fmt.Sprintf("Error when retrieving history data of target %s: %s", content.Target, err.Error()))
+				err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
+				if err != nil {
+					logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
+					return
+				}
+			}
+
+			historyJson, err := json.Marshal(history)
+			if err != nil {
+				logger.Error(fmt.Sprintf("Error when marshalling history data of target %s: %s", content.Target, err.Error()))
+				err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
+				if err != nil {
+					logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
+					return
+				}
+			}
+
+			logger.Trace(fmt.Sprintf("Retrieved history of target %s for %s.", content.Target, clientAddress))
+
+			err = sendMessage(conn, newMessage(REPLY, content.Target, string(historyJson)))
+			if err != nil {
+				logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
 				return
 			}
 		case REPLY:

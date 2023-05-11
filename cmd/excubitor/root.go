@@ -3,6 +3,7 @@ package excubitor
 import (
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/db"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/integrated_modules/cpuinfo"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
@@ -16,11 +17,13 @@ func Execute() error {
 		return err
 	}
 	if err := initLogging(); err != nil {
-		panic(err)
+		return err
 	}
 
 	logger := logging.GetLogger()
-	if err != nil {
+
+	logger.Debug("Initializing database!")
+	if err := db.InitDatabase(); err != nil {
 		return err
 	}
 
