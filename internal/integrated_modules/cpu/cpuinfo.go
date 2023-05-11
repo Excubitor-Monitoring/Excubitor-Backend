@@ -1,7 +1,8 @@
-package cpuinfo
+package cpu
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 )
@@ -14,6 +15,31 @@ type cpu struct {
 	ClockSpeed float64 `json:"clock_speed"`
 	CacheSize  uint    `json:"cache_size"`
 	Flags      string  `json:"flags"`
+}
+
+// readCPUInfoFile reads the contents of /proc/cpuinfo and returns them in a byte slice.
+func readCPUInfoFile() ([]byte, error) {
+	file, err := os.ReadFile("/proc/cpuinfo")
+	return file, err
+}
+
+// readCPUInfo can parse multiple threads from a cpuinfo file.
+func readCPUInfo(cpuInfo string) ([]cpu, error) {
+	paragraphs := regexp.MustCompile(`\n\s*\n`).Split(cpuInfo, -1)
+
+	cpus := make([]cpu, len(paragraphs)-1)
+
+	for i, p := range paragraphs {
+		if len(p) != 0 {
+			cpu, err := readCPU(p)
+			if err != nil {
+				return nil, err
+			}
+			cpus[i] = *cpu
+		}
+	}
+
+	return cpus, nil
 }
 
 // readCPU parses a single thread/core from a cpuinfo file into a cpu struct.
@@ -63,6 +89,8 @@ func readCPU(paragraph string) (*cpu, error) {
 		Flags:      flags,
 	}, nil
 }
+
+// HELPER METHODS
 
 func getUInt(name string, paragraph string) (uint, error) {
 	regex := regexp.MustCompile(name + `\s+:\s+(\d+)`)
