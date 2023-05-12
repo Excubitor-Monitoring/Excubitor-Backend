@@ -32,7 +32,7 @@ func GetEmptyTarget() TargetAddress {
 type message struct {
 	OpCode OpCode        `json:"op"`
 	Target TargetAddress `json:"target"`
-	Value  string        `json:"value"`
+	Value  string        `json:"value,omitempty"`
 }
 
 func newMessage(opcode OpCode, target TargetAddress, value string) message {
@@ -115,27 +115,9 @@ func handleWebsocket(conn net.Conn) {
 
 		switch content.OpCode {
 		case GET:
-			temporarySubscriber := broker.AddSubscriber()
-
-			var receiveOnce sync.Once
-
-			logger.Trace(fmt.Sprintf("Added temporary subscriber to fulfill GET request from %s on monitor %s.", clientAddress, content.Target))
-
-			go temporarySubscriber.Listen(func(m *pubsub.Message) {
-				receiveOnce.Do(func() {
-					logger.Trace(fmt.Sprintf("Sending single message from %s to connection from %s", m.GetMonitor(), clientAddress))
-					broker.Unsubscribe(temporarySubscriber, string(content.Target))
-					defer temporarySubscriber.Destruct()
-
-					err = sendMessage(conn, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
-					if err != nil {
-						logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
-						return
-					}
-				})
-			})
-
-			broker.Subscribe(temporarySubscriber, string(content.Target))
+			if err := handleGET(conn, content); err != nil {
+				return
+			}
 		case SUB:
 			broker.Subscribe(subscriber, string(content.Target))
 			logger.Trace("Client", clientAddress, "subscribed to monitor", content.Target)
@@ -143,33 +125,7 @@ func handleWebsocket(conn net.Conn) {
 			broker.Unsubscribe(subscriber, string(content.Target))
 			logger.Trace("Client", clientAddress, "unsubscribed from monitor", content.Target)
 		case HIST:
-			logger.Debug("Client", clientAddress, "requested history of monitor", content.Target)
-			reader := db.GetReader()
-			history, err := reader.GetHistoryEntriesByTarget(string(content.Target))
-			if err != nil {
-				logger.Error(fmt.Sprintf("Error when retrieving history data of target %s: %s", content.Target, err.Error()))
-				err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
-				if err != nil {
-					logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
-					return
-				}
-			}
-
-			historyJson, err := json.Marshal(history)
-			if err != nil {
-				logger.Error(fmt.Sprintf("Error when marshalling history data of target %s: %s", content.Target, err.Error()))
-				err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
-				if err != nil {
-					logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
-					return
-				}
-			}
-
-			logger.Trace(fmt.Sprintf("Retrieved history of target %s for %s.", content.Target, clientAddress))
-
-			err = sendMessage(conn, newMessage(REPLY, content.Target, string(historyJson)))
-			if err != nil {
-				logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
+			if err := handleHIST(conn, content); err != nil {
 				return
 			}
 		case REPLY:
@@ -192,6 +148,68 @@ func handleWebsocket(conn net.Conn) {
 			}
 		}
 	}
+}
+
+func handleGET(conn net.Conn, content *message) error {
+	broker := ctx.GetContext().GetBroker()
+	temporarySubscriber := broker.AddSubscriber()
+
+	var receiveOnce sync.Once
+
+	logger.Trace(fmt.Sprintf("Added temporary subscriber to fulfill GET request from %s on monitor %s.", conn.RemoteAddr(), content.Target))
+
+	go temporarySubscriber.Listen(func(m *pubsub.Message) {
+		receiveOnce.Do(func() {
+			logger.Trace(fmt.Sprintf("Sending single message from %s to connection from %s", m.GetMonitor(), conn.RemoteAddr()))
+			broker.Unsubscribe(temporarySubscriber, string(content.Target))
+			defer temporarySubscriber.Destruct()
+
+			if err := sendMessage(conn, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody())); err != nil {
+				logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", conn.RemoteAddr()))
+				return
+			}
+		})
+	})
+
+	broker.Subscribe(temporarySubscriber, string(content.Target))
+
+	return nil
+}
+
+func handleHIST(conn net.Conn, content *message) error {
+	clientAddress := conn.RemoteAddr()
+
+	logger.Debug("Client", clientAddress, "requested history of monitor", content.Target)
+	reader := db.GetReader()
+	history, err := reader.GetHistoryEntriesByTarget(string(content.Target))
+	if err != nil {
+		logger.Error(fmt.Sprintf("Error when retrieving history data of target %s: %s", content.Target, err.Error()))
+		err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
+		if err != nil {
+			logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
+			return err
+		}
+	}
+
+	historyJson, err := json.Marshal(history)
+	if err != nil {
+		logger.Error(fmt.Sprintf("Error when marshalling history data of target %s: %s", content.Target, err.Error()))
+		err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
+		if err != nil {
+			logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
+			return err
+		}
+	}
+
+	logger.Trace(fmt.Sprintf("Retrieved history of target %s for %s.", content.Target, clientAddress))
+
+	err = sendMessage(conn, newMessage(REPLY, content.Target, string(historyJson)))
+	if err != nil {
+		logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
+		return err
+	}
+
+	return nil
 }
 
 func sendMessage(conn net.Conn, msg message) error {
