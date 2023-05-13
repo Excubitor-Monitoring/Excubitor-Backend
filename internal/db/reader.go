@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
 )
 
 type Reader struct {
@@ -13,7 +14,7 @@ func GetReader() *Reader {
 	return reader
 }
 
-func (reader *Reader) GetHistoryEntriesByTarget(target string) (History, error) {
+func (reader *Reader) GetHistoryEntries(target string) (History, error) {
 	stmt, err := reader.db.Prepare(`
 		SELECT * FROM history WHERE target = ?;
 	`)
@@ -26,6 +27,56 @@ func (reader *Reader) GetHistoryEntriesByTarget(target string) (History, error) 
 		return nil, err
 	}
 
+	data, err := collectHistoryMessages(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := rows.Close(); err != nil {
+		logger.Error("Error upon closing rows:", err)
+	}
+
+	if err := stmt.Close(); err != nil {
+		logger.Error("Error upon closing statement for reader:", err)
+	}
+
+	return data, nil
+}
+
+func (reader *Reader) GetHistoryEntriesFromUntil(target string, from time.Time, until time.Time) (History, error) {
+	stmt, err := reader.db.Prepare(`
+		SELECT * FROM history WHERE target = ? AND time > ? AND time < ?;
+	`)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := stmt.Query(target, from, until)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := collectHistoryMessages(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := rows.Close(); err != nil {
+		logger.Error("Error upon closing rows:", err)
+	}
+
+	if err := stmt.Close(); err != nil {
+		logger.Error("Error upon closing statement for reader:", err)
+	}
+
+	return data, nil
+}
+
+func (reader *Reader) GetHistoryEntriesFrom(target string, from time.Time) (History, error) {
+	return reader.GetHistoryEntriesFromUntil(target, from, time.Now())
+}
+
+func collectHistoryMessages(rows *sql.Rows) (History, error) {
 	data := History{}
 	for rows.Next() {
 		message := HistoryMessage{}
@@ -43,14 +94,6 @@ func (reader *Reader) GetHistoryEntriesByTarget(target string) (History, error) 
 		message.Message.Value = decompressedValue
 
 		data = append(data, message)
-	}
-
-	if err := rows.Close(); err != nil {
-		logger.Error("Error upon closing rows:", err)
-	}
-
-	if err := stmt.Close(); err != nil {
-		logger.Error("Error upon closing statement for reader:", err)
 	}
 
 	return data, nil

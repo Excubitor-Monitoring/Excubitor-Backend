@@ -60,7 +60,7 @@ func TestReader_GetHistoryEntriesByTarget(t *testing.T) {
 		return
 	}
 
-	history, err := reader.GetHistoryEntriesByTarget("Target1")
+	history, err := reader.GetHistoryEntries("Target1")
 	if err != nil {
 		return
 	}
