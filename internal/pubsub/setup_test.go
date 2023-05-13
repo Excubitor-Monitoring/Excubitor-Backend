@@ -14,7 +14,8 @@ func TestMain(m *testing.M) {
 		"logging.log_level":  "TRACE",
 		"logging.method":     "CONSOLE",
 		"data.module_clock":  "5s",
-		"data.storage_time":  "30d",
+		"data.storage_time":  "720h",
+		"data.purge_cycle":   "1h",
 		"data.database_file": "history_test.db",
 	}, "."), nil)
 	if err != nil {
