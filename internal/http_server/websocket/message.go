@@ -31,7 +31,7 @@ func (msg Message) Bytes() ([]byte, error) {
 }
 
 type HistoryRequestParameters struct {
-	From       time.Time     `json:"from,omitempty"`
-	Until      time.Time     `json:"until,omitempty"`
-	MaxDensity time.Duration `json:"max_density,omitempty"`
+	From       time.Time   `json:"from,omitempty"`
+	Until      time.Time   `json:"until,omitempty"`
+	MaxDensity interface{} `json:"max_density,omitempty"`
 }

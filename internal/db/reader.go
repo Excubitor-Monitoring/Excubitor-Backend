@@ -22,25 +22,29 @@ func (reader *Reader) GetHistoryEntries(target string) (History, error) {
 		return nil, err
 	}
 
-	rows, err := stmt.Query(target)
+	return retrieveHistoryFromDB(stmt, target)
+}
+
+func (reader *Reader) GetHistoryEntriesThinned(target string, maxDensity time.Duration) (History, error) {
+	data, err := reader.GetHistoryEntries(target)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := collectHistoryMessages(rows)
+	return thinData(data, maxDensity), nil
+}
+
+func (reader *Reader) GetHistoryEntriesFrom(target string, from time.Time) (History, error) {
+	return reader.GetHistoryEntriesFromUntil(target, from, time.Now())
+}
+
+func (reader *Reader) GetHistoryEntriesFromThinned(target string, from time.Time, maxDensity time.Duration) (History, error) {
+	data, err := reader.GetHistoryEntriesFrom(target, from)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := rows.Close(); err != nil {
-		logger.Error("Error upon closing rows:", err)
-	}
-
-	if err := stmt.Close(); err != nil {
-		logger.Error("Error upon closing statement for reader:", err)
-	}
-
-	return data, nil
+	return thinData(data, maxDensity), nil
 }
 
 func (reader *Reader) GetHistoryEntriesFromUntil(target string, from time.Time, until time.Time) (History, error) {
@@ -51,7 +55,20 @@ func (reader *Reader) GetHistoryEntriesFromUntil(target string, from time.Time, 
 		return nil, err
 	}
 
-	rows, err := stmt.Query(target, from, until)
+	return retrieveHistoryFromDB(stmt, target, from, until)
+}
+
+func (reader *Reader) GetHistoryEntriesFromUntilThinned(target string, from time.Time, until time.Time, maxDensity time.Duration) (History, error) {
+	data, err := reader.GetHistoryEntriesFromUntil(target, from, until)
+	if err != nil {
+		return nil, err
+	}
+
+	return thinData(data, maxDensity), nil
+}
+
+func retrieveHistoryFromDB(stmt *sql.Stmt, args ...any) (History, error) {
+	rows, err := stmt.Query(args...)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +89,25 @@ func (reader *Reader) GetHistoryEntriesFromUntil(target string, from time.Time, 
 	return data, nil
 }
 
-func (reader *Reader) GetHistoryEntriesFrom(target string, from time.Time) (History, error) {
-	return reader.GetHistoryEntriesFromUntil(target, from, time.Now())
+func thinData(history History, maxDensity time.Duration) History {
+	if len(history) == 0 {
+		return history
+	}
+
+	var newHistory History
+	newHistory = append(newHistory, history[0])
+
+	reference := history[0].Timestamp.Add(maxDensity)
+	remaining := history[1:]
+
+	for _, entry := range remaining {
+		if entry.Timestamp.After(reference) {
+			newHistory = append(newHistory, entry)
+			reference = entry.Timestamp.Add(maxDensity)
+		}
+	}
+
+	return newHistory
 }
 
 func collectHistoryMessages(rows *sql.Rows) (History, error) {

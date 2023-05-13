@@ -86,3 +86,19 @@ func TestReader_GetHistoryEntriesByTarget(t *testing.T) {
 	assert.True(t, oneContent1)
 	assert.True(t, oneContent2)
 }
+
+func TestThinData(t *testing.T) {
+	history := History{
+		HistoryMessage{Timestamp: time.Now().Add(-25 * time.Minute)},
+		HistoryMessage{Timestamp: time.Now().Add(-20 * time.Minute)},
+		HistoryMessage{Timestamp: time.Now().Add(-15 * time.Minute)},
+		HistoryMessage{Timestamp: time.Now().Add(-10 * time.Minute)},
+		HistoryMessage{Timestamp: time.Now().Add(-5 * time.Minute)},
+		HistoryMessage{Timestamp: time.Now()},
+		HistoryMessage{Timestamp: time.Now().Add(5 * time.Minute)},
+	}
+
+	newHistory := thinData(history, 6*time.Minute)
+
+	assert.Equal(t, 4, len(newHistory))
+}

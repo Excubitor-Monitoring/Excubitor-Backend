@@ -158,7 +158,7 @@ func handleHIST(conn net.Conn, content *Message) error {
 	params := &HistoryRequestParameters{
 		From:       time.Time{},
 		Until:      time.Now(),
-		MaxDensity: time.Nanosecond,
+		MaxDensity: "1ns",
 	}
 
 	if content.Value != "" {
@@ -175,8 +175,20 @@ func handleHIST(conn net.Conn, content *Message) error {
 
 	logger.Info(fmt.Sprintf("HistoryRequestParameters{ From: %s, Until: %s, MaxDensity: %s }", params.From, params.Until, params.MaxDensity))
 
+	var maxDensity time.Duration
+	switch duration := params.MaxDensity.(type) {
+	case float64:
+		maxDensity = time.Duration(duration)
+	case string:
+		var err error
+		maxDensity, err = time.ParseDuration(duration)
+		if err != nil {
+			return err
+		}
+	}
+
 	reader := db.GetReader()
-	history, err := reader.GetHistoryEntriesFromUntil(string(content.Target), params.From, params.Until)
+	history, err := reader.GetHistoryEntriesFromUntilThinned(string(content.Target), params.From, params.Until, maxDensity)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error when retrieving history data of target %s: %s", content.Target, err.Error()))
 

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/knadh/koanf/providers/confmap"
@@ -26,8 +27,10 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
-	if err := os.Remove("history_test.db"); err != nil {
-		panic(err)
+	if _, err := os.Stat("history_test.db"); !errors.Is(err, os.ErrNotExist) {
+		if err := os.Remove("history_test.db"); err != nil {
+			panic(err)
+		}
 	}
 
 	os.Exit(code)
