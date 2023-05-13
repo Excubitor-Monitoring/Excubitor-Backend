@@ -1,6 +1,9 @@
 package websocket
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 type TargetAddress string
 
@@ -25,4 +28,10 @@ func (msg Message) Bytes() ([]byte, error) {
 	}
 
 	return jsonData, nil
+}
+
+type HistoryRequestParameters struct {
+	From       time.Time     `json:"from,omitempty"`
+	Until      time.Time     `json:"until,omitempty"`
+	MaxDensity time.Duration `json:"max_density,omitempty"`
 }
