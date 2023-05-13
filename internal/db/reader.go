@@ -25,12 +25,6 @@ func (reader *Reader) GetHistoryEntriesByTarget(target string) (History, error) 
 	if err != nil {
 		return nil, err
 	}
-	defer func(rows *sql.Rows) {
-		err := rows.Close()
-		if err != nil {
-			logger.Error("Error upon closing rows:", err)
-		}
-	}(rows)
 
 	data := History{}
 	for rows.Next() {
@@ -49,6 +43,14 @@ func (reader *Reader) GetHistoryEntriesByTarget(target string) (History, error) 
 		message.Message.Value = decompressedValue
 
 		data = append(data, message)
+	}
+
+	if err := rows.Close(); err != nil {
+		logger.Error("Error upon closing rows:", err)
+	}
+
+	if err := stmt.Close(); err != nil {
+		logger.Error("Error upon closing statement for reader:", err)
 	}
 
 	return data, nil

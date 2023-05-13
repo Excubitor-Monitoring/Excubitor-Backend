@@ -31,5 +31,9 @@ func (writer *Writer) AddHistoryEntry(target string, content string) error {
 		return err
 	}
 
+	if err := stmt.Close(); err != nil {
+		logger.Error("Error on closing statement for writer:", err)
+	}
+
 	return nil
 }

@@ -108,7 +108,12 @@ func purgeOldEntries(db *sql.DB) error {
 
 	result, err := stmt.Exec(time.Now().Add(-storageTime))
 	if err != nil {
+		_ = stmt.Close()
 		return err
+	}
+
+	if err := stmt.Close(); err != nil {
+		logger.Error("Error on closing statement for purging database entries:", err)
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -132,6 +137,10 @@ func vacuumDB(db *sql.DB) error {
 
 	if _, err := stmt.Exec(); err != nil {
 		return err
+	}
+
+	if err := stmt.Close(); err != nil {
+		logger.Error("Error on closing statement for vacuuming database:", err)
 	}
 
 	return nil
