@@ -12,7 +12,8 @@ func TestMain(m *testing.M) {
 	err := config.GetConfig().Load(confmap.Provider(map[string]interface{}{
 		"logging.log_level":  "TRACE",
 		"logging.method":     "CONSOLE",
-		"data.storage_time":  "30d",
+		"data.storage_time":  "720h",
+		"data.purge_cycle":   "1h",
 		"data.database_file": "history_test.db",
 	}, "."), nil)
 	if err != nil {
@@ -20,9 +21,6 @@ func TestMain(m *testing.M) {
 	}
 
 	if err := logging.InitLogging(); err != nil {
-		panic(err)
-	}
-	if err := InitDatabase(); err != nil {
 		panic(err)
 	}
 
@@ -33,4 +31,12 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(code)
+}
+
+func clearDatabase() error {
+	if _, err := GetWriter().db.Exec("DELETE FROM history WHERE true"); err != nil {
+		return err
+	}
+
+	return nil
 }
