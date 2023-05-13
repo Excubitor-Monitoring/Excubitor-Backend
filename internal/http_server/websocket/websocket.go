@@ -1,10 +1,11 @@
-package http_server
+package websocket
 
 import (
 	"encoding/json"
 	"fmt"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/db"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pubsub"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -12,43 +13,9 @@ import (
 	"sync"
 )
 
-type OpCode string
+var logger logging.Logger
 
-const (
-	GET   OpCode = "GET"
-	SUB   OpCode = "SUB"
-	UNSUB OpCode = "UNSUB"
-	HIST  OpCode = "HIST"
-	REPLY OpCode = "REPLY"
-	ERR   OpCode = "ERR"
-)
-
-type TargetAddress string
-
-func GetEmptyTarget() TargetAddress {
-	return ""
-}
-
-type message struct {
-	OpCode OpCode        `json:"op"`
-	Target TargetAddress `json:"target"`
-	Value  string        `json:"value,omitempty"`
-}
-
-func newMessage(opcode OpCode, target TargetAddress, value string) message {
-	return message{opcode, target, value}
-}
-
-func (msg message) bytes() ([]byte, error) {
-	jsonData, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	return jsonData, nil
-}
-
-func handleWebsocket(conn net.Conn) {
+func HandleWebsocket(conn net.Conn) {
 	var err error
 	clientAddress := conn.RemoteAddr()
 
@@ -61,6 +28,8 @@ func handleWebsocket(conn net.Conn) {
 		}
 	}(conn)
 
+	// Set up subscriber
+
 	broker := ctx.GetContext().GetBroker()
 	subscriber := broker.AddSubscriber()
 	defer func(subscriber *pubsub.Subscriber) {
@@ -70,7 +39,7 @@ func handleWebsocket(conn net.Conn) {
 
 	go subscriber.Listen(func(m *pubsub.Message) {
 		logger.Trace(fmt.Sprintf("Sending message from %s to connection from %s", m.GetMonitor(), clientAddress))
-		err = sendMessage(conn, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
+		err = sendMessage(conn, NewMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody()))
 		if err != nil {
 			logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
 			return
@@ -100,11 +69,11 @@ func handleWebsocket(conn net.Conn) {
 
 		// Decoding message
 
-		content := &message{}
+		content := &Message{}
 		if err = json.Unmarshal(msg, content); err != nil {
 			logger.Warn(fmt.Sprintf("Can't decode message from %s! Dropping request...", clientAddress))
 
-			err := sendMessage(conn, newMessage(ERR, GetEmptyTarget(), "Bad Request!"))
+			err := sendMessage(conn, NewMessage(ERR, GetEmptyTarget(), "Bad Request!"))
 			if err != nil {
 				logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason %s. Forcing connection to close.", clientAddress, err.Error()))
 				return
@@ -129,19 +98,19 @@ func handleWebsocket(conn net.Conn) {
 				return
 			}
 		case REPLY:
-			err = sendMessage(conn, newMessage(ERR, content.Target, "Clients may not send messages of the type REPLY!"))
+			err = sendMessage(conn, NewMessage(ERR, content.Target, "Clients may not send messages of the type REPLY!"))
 			if err != nil {
 				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
 				return
 			}
 		case ERR:
-			err = sendMessage(conn, newMessage(ERR, content.Target, "Clients may not send messages of the type ERROR"))
+			err = sendMessage(conn, NewMessage(ERR, content.Target, "Clients may not send messages of the type ERROR"))
 			if err != nil {
 				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
 				return
 			}
 		default:
-			err = sendMessage(conn, newMessage(ERR, content.Target, fmt.Sprintf("Unsupported Operation %s!", content.OpCode)))
+			err = sendMessage(conn, NewMessage(ERR, content.Target, fmt.Sprintf("Unsupported Operation %s!", content.OpCode)))
 			if err != nil {
 				logger.Warn(fmt.Sprintf("Sending error message to %s was unsuccessful! Aborting connection...", clientAddress))
 				return
@@ -150,7 +119,7 @@ func handleWebsocket(conn net.Conn) {
 	}
 }
 
-func handleGET(conn net.Conn, content *message) error {
+func handleGET(conn net.Conn, content *Message) error {
 	broker := ctx.GetContext().GetBroker()
 	temporarySubscriber := broker.AddSubscriber()
 
@@ -164,7 +133,7 @@ func handleGET(conn net.Conn, content *message) error {
 			broker.Unsubscribe(temporarySubscriber, string(content.Target))
 			defer temporarySubscriber.Destruct()
 
-			if err := sendMessage(conn, newMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody())); err != nil {
+			if err := sendMessage(conn, NewMessage(REPLY, TargetAddress(m.GetMonitor()), m.GetMessageBody())); err != nil {
 				logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", conn.RemoteAddr()))
 				return
 			}
@@ -176,7 +145,7 @@ func handleGET(conn net.Conn, content *message) error {
 	return nil
 }
 
-func handleHIST(conn net.Conn, content *message) error {
+func handleHIST(conn net.Conn, content *Message) error {
 	clientAddress := conn.RemoteAddr()
 
 	logger.Debug("Client", clientAddress, "requested history of monitor", content.Target)
@@ -184,7 +153,7 @@ func handleHIST(conn net.Conn, content *message) error {
 	history, err := reader.GetHistoryEntriesByTarget(string(content.Target))
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error when retrieving history data of target %s: %s", content.Target, err.Error()))
-		err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
+		err := sendMessage(conn, NewMessage(ERR, content.Target, "Internal server error!"))
 		if err != nil {
 			logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
 			return err
@@ -194,7 +163,7 @@ func handleHIST(conn net.Conn, content *message) error {
 	historyJson, err := json.Marshal(history)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Error when marshalling history data of target %s: %s", content.Target, err.Error()))
-		err := sendMessage(conn, newMessage(ERR, content.Target, "Internal server error!"))
+		err := sendMessage(conn, NewMessage(ERR, content.Target, "Internal server error!"))
 		if err != nil {
 			logger.Error(fmt.Sprintf("Sending error message for %s was unsuccessful with reason. Forcing connection to close.", clientAddress))
 			return err
@@ -203,7 +172,7 @@ func handleHIST(conn net.Conn, content *message) error {
 
 	logger.Trace(fmt.Sprintf("Retrieved history of target %s for %s.", content.Target, clientAddress))
 
-	err = sendMessage(conn, newMessage(REPLY, content.Target, string(historyJson)))
+	err = sendMessage(conn, NewMessage(REPLY, content.Target, string(historyJson)))
 	if err != nil {
 		logger.Error(fmt.Sprintf("Couldn't send message to %s. Aborting connection...", clientAddress))
 		return err
@@ -212,10 +181,10 @@ func handleHIST(conn net.Conn, content *message) error {
 	return nil
 }
 
-func sendMessage(conn net.Conn, msg message) error {
+func sendMessage(conn net.Conn, msg Message) error {
 	var err error
 
-	bytes, err := msg.bytes()
+	bytes, err := msg.Bytes()
 	if err != nil {
 		return err
 	}
