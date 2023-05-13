@@ -19,6 +19,8 @@ func HandleWebsocket(conn net.Conn) {
 	var err error
 	clientAddress := conn.RemoteAddr()
 
+	logger = logging.GetLogger()
+
 	defer func(conn net.Conn) {
 		logger.Debug(fmt.Sprintf("Closing connection from %s", clientAddress))
 
