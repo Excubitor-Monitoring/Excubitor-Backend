@@ -197,6 +197,8 @@ func TestHIST(t *testing.T) {
 		return
 	}
 
+	reference := time.Now()
+
 	for i := 0; i < 5; i++ {
 		// COMPRESS TEST DATA VALUE FIELD
 		buf := new(strings.Builder)
