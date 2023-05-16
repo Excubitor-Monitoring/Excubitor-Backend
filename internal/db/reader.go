@@ -101,7 +101,7 @@ func thinData(history History, maxDensity time.Duration) History {
 	remaining := history[1:]
 
 	for _, entry := range remaining {
-		if entry.Timestamp.After(reference) {
+		if entry.Timestamp.After(reference) || entry.Timestamp.Equal(reference) {
 			newHistory = append(newHistory, entry)
 			reference = entry.Timestamp.Add(maxDensity)
 		}
