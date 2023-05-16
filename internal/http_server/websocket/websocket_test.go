@@ -203,7 +203,7 @@ func TestHIST(t *testing.T) {
 		// COMPRESS TEST DATA VALUE FIELD
 		buf := new(strings.Builder)
 
-		messageValue := fmt.Sprintf("Message No. %d", i)
+		messageValue := fmt.Sprintf("Message No. %d", 4-i)
 
 		writer := zlib.NewWriter(buf)
 		if _, err := writer.Write([]byte(messageValue)); err != nil {
@@ -217,7 +217,7 @@ func TestHIST(t *testing.T) {
 
 		compressedValue := buf.String()
 
-		_, err := stmt.Exec(time.Now().Add(-time.Duration(i)*time.Minute), "Some.Target", compressedValue)
+		_, err := stmt.Exec(reference.Add(-time.Duration(i)*time.Minute), "Some.Target", compressedValue)
 		if err != nil {
 			t.Error(err)
 			return
@@ -282,11 +282,11 @@ func TestHIST(t *testing.T) {
 	}
 
 	require.Equal(t, 5, len(history))
-	assert.Equal(t, "Message No. 4", history[0].Message.Value)
-	assert.Equal(t, "Message No. 3", history[1].Message.Value)
+	assert.Equal(t, "Message No. 0", history[0].Message.Value)
+	assert.Equal(t, "Message No. 1", history[1].Message.Value)
 	assert.Equal(t, "Message No. 2", history[2].Message.Value)
-	assert.Equal(t, "Message No. 1", history[3].Message.Value)
-	assert.Equal(t, "Message No. 0", history[4].Message.Value)
+	assert.Equal(t, "Message No. 3", history[3].Message.Value)
+	assert.Equal(t, "Message No. 4", history[4].Message.Value)
 	assert.Equal(t, "Some.Target", history[0].Message.Target)
 	assert.Equal(t, "Some.Target", history[1].Message.Target)
 	assert.Equal(t, "Some.Target", history[2].Message.Target)
@@ -300,10 +300,17 @@ func TestHIST(t *testing.T) {
 	}
 
 	require.Equal(t, 3, len(history))
-	assert.Equal(t, "Message No. 3", history[0].Message.Value)
+	assert.Equal(t, "Message No. 1", history[0].Message.Value)
 	assert.Equal(t, "Message No. 2", history[1].Message.Value)
-	assert.Equal(t, "Message No. 1", history[2].Message.Value)
+	assert.Equal(t, "Message No. 3", history[2].Message.Value)
 	assert.Equal(t, "Some.Target", history[0].Message.Target)
 	assert.Equal(t, "Some.Target", history[1].Message.Target)
 	assert.Equal(t, "Some.Target", history[2].Message.Target)
+
+	history, err = sendHISTRequest(client, "Some.Target", HistoryRequestParameters{Until: time.Now(), MaxDensity: 2 * time.Minute})
+
+	require.Equal(t, 3, len(history))
+	assert.Equal(t, "Message No. 0", history[0].Message.Value)
+	assert.Equal(t, "Message No. 2", history[1].Message.Value)
+	assert.Equal(t, "Message No. 4", history[2].Message.Value)
 }
