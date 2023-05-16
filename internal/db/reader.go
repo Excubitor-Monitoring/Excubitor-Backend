@@ -121,7 +121,7 @@ func collectHistoryMessages(rows *sql.Rows) (History, error) {
 
 		decompressedValue, err := decompress(message.Message.Value)
 		if err != nil {
-			logger.Error(fmt.Sprintf("Could not decompress value of timestamp %s of target %s!", message.Timestamp.UTC().String(), message.Message.Target))
+			logger.Error(fmt.Sprintf("Could not decompress value of timestamp %s of target %s! Reason: %s", message.Timestamp.UTC().String(), message.Message.Target, err))
 			continue
 		}
 
