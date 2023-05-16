@@ -49,7 +49,7 @@ func (reader *Reader) GetHistoryEntriesFromThinned(target string, from time.Time
 
 func (reader *Reader) GetHistoryEntriesFromUntil(target string, from time.Time, until time.Time) (History, error) {
 	stmt, err := reader.db.Prepare(`
-		SELECT * FROM history WHERE target = ? AND time > ? AND time < ?;
+		SELECT * FROM history WHERE target = ? AND time >= ? AND time <= ?;
 	`)
 	if err != nil {
 		return nil, err
