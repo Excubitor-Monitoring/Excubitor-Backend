@@ -179,6 +179,12 @@ func TestHIST(t *testing.T) {
 		return
 	}
 
+	_, err = database.Exec(`DELETE FROM history`)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
 	transaction, err := database.Begin()
 	if err != nil {
 		t.Error(err)
