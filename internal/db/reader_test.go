@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -88,17 +89,46 @@ func TestReader_GetHistoryEntriesByTarget(t *testing.T) {
 }
 
 func TestThinData(t *testing.T) {
-	history := History{
-		HistoryMessage{Timestamp: time.Now().Add(-25 * time.Minute)},
-		HistoryMessage{Timestamp: time.Now().Add(-20 * time.Minute)},
-		HistoryMessage{Timestamp: time.Now().Add(-15 * time.Minute)},
-		HistoryMessage{Timestamp: time.Now().Add(-10 * time.Minute)},
-		HistoryMessage{Timestamp: time.Now().Add(-5 * time.Minute)},
-		HistoryMessage{Timestamp: time.Now()},
-		HistoryMessage{Timestamp: time.Now().Add(5 * time.Minute)},
+	type testParameters struct {
+		originalDuration time.Duration
+		thinnedDuration  time.Duration
+		originalLength   int
+		thinnedLength    int
 	}
 
-	newHistory := thinData(history, 6*time.Minute)
+	for _, params := range []testParameters{
+		{
+			originalDuration: 5 * time.Minute,
+			thinnedDuration:  6 * time.Minute,
+			originalLength:   7,
+			thinnedLength:    4,
+		},
+		{
+			originalDuration: 2 * time.Minute,
+			thinnedDuration:  6 * time.Minute,
+			originalLength:   8,
+			thinnedLength:    3,
+		},
+	} {
+		t.Run(
+			fmt.Sprintf(
+				"TestParameters{ originalDuration: %s, thinnedDuration: %s, originalLength: %d, thinnedLength: %d}",
+				params.originalDuration, params.thinnedDuration, params.originalLength, params.thinnedLength,
+			),
+			func(t *testing.T) {
+				history := History{}
 
-	assert.Equal(t, 4, len(newHistory))
+				reference := time.Now()
+
+				for i := 0; i < params.originalLength; i++ {
+					history = append(history, HistoryMessage{
+						Timestamp: reference.Add(time.Duration(i) * params.originalDuration),
+					})
+				}
+
+				newHistory := thinData(history, params.thinnedDuration)
+
+				assert.Equal(t, params.thinnedLength, len(newHistory))
+			})
+	}
 }
