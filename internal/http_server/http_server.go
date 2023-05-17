@@ -6,6 +6,7 @@ import (
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/models"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/websocket"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/gobwas/ws"
 	"net/http"
@@ -74,5 +75,5 @@ func wsInit(w http.ResponseWriter, r *http.Request) {
 		logger.Error(fmt.Sprintf("Connection from %s couldn't be upgraded: %s", r.RemoteAddr, err))
 	}
 
-	handleWebsocket(conn)
+	websocket.HandleWebsocket(conn)
 }

@@ -76,7 +76,7 @@ func (subscriber *Subscriber) Listen(listener Listener) {
 		}
 
 		if message, ok := <-subscriber.messages; ok {
-			logger.Trace(fmt.Sprintf("Subscriber %s received message from %s: %s", subscriber.id, message.GetMonitor(), message.GetMessageBody()))
+			logger.Trace(fmt.Sprintf("Subscriber %s received message from %s.", subscriber.id, message.GetMonitor()))
 			listener(message)
 		}
 	}

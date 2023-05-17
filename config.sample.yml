@@ -23,3 +23,17 @@ http:
         jwt:
             access_token_secret: "" # Set me before application startup
             refresh_token_secret: "" # Set me before application startup
+# Data configuration
+data:
+    # This defines how often modules shall report their values.
+    # Default: 5s - Be careful with this setting as it will lead to larger database sizes
+    module_clock: 5s
+    # This defines how long data shall be stored in the database.
+    # Default: 720h (30 days)
+    storage_time: 720h
+    # This defines how often database entries older than the time defined in storage_time shall be purged.
+    # Default: 1h
+    purge_cycle: 1h
+    # This defines where the database file shall be stored.
+    # Default: history.db
+    database_file: 'history.db'

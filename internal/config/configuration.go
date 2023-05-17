@@ -32,6 +32,10 @@ func InitConfig() error {
 		"http.cors.allowed_headers":          []string{"Origin", "Content-Type", "Authorization"},
 		"http.auth.jwt.access_token_secret":  "",
 		"http.auth.jwt.refresh_token_secret": "",
+		"data.module_clock":                  "5s",
+		"data.storage_time":                  "720h",
+		"data.purge_cycle":                   "1h",
+		"data.database_file":                 "history.db",
 	}, "."), nil)
 	if err != nil {
 		return err

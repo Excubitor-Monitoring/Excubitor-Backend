@@ -1,12 +1,10 @@
-package cpuinfo
+package cpu
 
 import (
 	"encoding/json"
 	"fmt"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
-	"os"
-	"regexp"
 )
 
 var logger logging.Logger
@@ -35,29 +33,4 @@ func Tick() {
 
 	broker := ctx.GetContext().GetBroker()
 	broker.Publish("CPU.CpuInfo", string(jsonOutput))
-}
-
-// readCPUInfoFile reads the contents of /proc/cpuinfo and returns them in a byte slice.
-func readCPUInfoFile() ([]byte, error) {
-	file, err := os.ReadFile("/proc/cpuinfo")
-	return file, err
-}
-
-// readCPUInfo can parse multiple threads from a cpuinfo file.
-func readCPUInfo(cpuInfo string) ([]cpu, error) {
-	paragraphs := regexp.MustCompile(`\n\s*\n`).Split(cpuInfo, -1)
-
-	cpus := make([]cpu, len(paragraphs)-1)
-
-	for i, p := range paragraphs {
-		if len(p) != 0 {
-			cpu, err := readCPU(p)
-			if err != nil {
-				return nil, err
-			}
-			cpus[i] = *cpu
-		}
-	}
-
-	return cpus, nil
 }

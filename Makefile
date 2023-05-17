@@ -1,10 +1,21 @@
+GO=go
+GOTEST=$(GO) test
+GOCOVER=$(GO) tool cover
+GOMOD=$(GO) mod
+GOBUILD=$(GO) build
+GORUN=$(GO) run
+
 install-deps:
 	echo "Installing all go dependencies"
-	go mod download
+	$(GOMOD) download
 build:
 	echo "Compiling project for current platform"
-	go build -o bin/excubitor-backend cmd/excubitor/main.go
+	$(GOBUILD) -o bin/excubitor-backend ./cmd/main.go
 run:
-	go run cmd/main.go
+	$(GORUN) cmd/main.go
 test:
-	go test -v ./...
+	$(GOTEST) -v ./...
+test/coverage:
+	$(GOTEST) -v -coverprofile=coverage.out ./...
+	$(GOCOVER) -func=coverage.out
+	$(GOCOVER) -html=coverage.out

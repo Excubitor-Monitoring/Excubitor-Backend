@@ -9,20 +9,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 	"time"
 )
-
-func TestMain(m *testing.M) {
-	err := logging.SetDefaultLogger("CONSOLE")
-	if err != nil {
-		panic(err)
-	}
-	code := m.Run()
-	os.Exit(code)
-}
 
 func TestHandleAuthRequestInvalidMethod(t *testing.T) {
 

@@ -6,6 +6,8 @@ import (
 	"sync"
 )
 
+var singletonOnce sync.Once
+
 type Module struct {
 	Name         string `json:"name"`
 	tickFunction func()
@@ -25,10 +27,8 @@ type Context struct {
 var context *Context
 
 func GetContext() *Context {
-	var once sync.Once
-
 	if context == nil {
-		once.Do(func() {
+		singletonOnce.Do(func() {
 			context = &Context{
 				modules: map[string]*Module{},
 			}
@@ -42,13 +42,9 @@ func (ctx *Context) RegisterModule(module *Module) {
 	ctx.lock.RLock()
 	defer ctx.lock.RUnlock()
 
-	var once sync.Once
-
 	ctx.modules[module.Name] = module
 
-	once.Do(func() {
-		startClock()
-	})
+	startClock()
 }
 
 func (ctx *Context) GetModules() []Module {

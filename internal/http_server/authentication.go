@@ -56,6 +56,24 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 
 		switch request.Method {
 		case "PAM":
+			if request.Credentials == nil {
+				logger.Debug(fmt.Sprintf("Could not read credentials in auth request from %s!", r.RemoteAddr))
+				ReturnError(w, r, http.StatusBadRequest, "Credentials not specified!")
+				return
+			}
+
+			if request.Credentials["username"] == nil {
+				logger.Debug(fmt.Sprintf("Could not read username in pam auth request from %s!", r.RemoteAddr))
+				ReturnError(w, r, http.StatusBadRequest, "Username not specified!")
+				return
+			}
+
+			if request.Credentials["password"] == nil {
+				logger.Debug(fmt.Sprintf("Could not read password in pam auth request from %s!", r.RemoteAddr))
+				ReturnError(w, r, http.StatusBadRequest, "Password not specified!")
+				return
+			}
+
 			username := request.Credentials["username"].(string)
 			password := request.Credentials["password"].(string)
 
