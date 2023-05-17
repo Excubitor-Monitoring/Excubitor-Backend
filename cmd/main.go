@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Excubitor-Monitoring/Excubitor-Backend/cmd/excubitor"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/excubitor"
 )
 
 func main() {

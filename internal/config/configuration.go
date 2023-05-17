@@ -23,6 +23,7 @@ var ErrInvalidConfigParameter = errors.New("invalid config parameter")
 func InitConfig() error {
 	// Load default values
 	err := k.Load(confmap.Provider(map[string]interface{}{
+		"main.print_startup_banner":          true,
 		"logging.log_level":                  "INFO",
 		"logging.method":                     "CONSOLE",
 		"http.host":                          "0.0.0.0",

@@ -1,3 +1,7 @@
+# MAIN CONFIGURATION
+main:
+    # Defines whether the startup banner should be displayed.
+    print_startup_banner: true
 # LOGGING CONFIGURATION
 # Available log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL
 # Available log methods: CONSOLE, FILE, HYBRID
