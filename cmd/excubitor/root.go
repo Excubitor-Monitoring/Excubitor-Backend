@@ -6,6 +6,7 @@ import (
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/db"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/integrated_modules/cpu"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/integrated_modules/memory"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pubsub"
 )
@@ -32,6 +33,7 @@ func Execute() error {
 	context.RegisterModule(ctx.NewModule("main", func() {
 	}))
 	context.RegisterModule(ctx.NewModule("cpu", cpu.Tick))
+	context.RegisterModule(ctx.NewModule("memory", memory.Tick))
 	logger.Debug("Registering broker...")
 	context.RegisterBroker(pubsub.NewBroker())
 
