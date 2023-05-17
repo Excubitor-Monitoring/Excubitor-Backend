@@ -25,6 +25,25 @@ func TestNewMessage(t *testing.T) {
 	assert.Equal(t, "Some value", msg.Value)
 }
 
+func TestHandleWebsocketBadRequest(t *testing.T) {
+	server, client := net.Pipe()
+
+	go HandleWebsocket(server)
+
+	if err := wsutil.WriteClientText(client, []byte("Invalid message!")); err != nil {
+		t.Error(err)
+		return
+	}
+
+	replyBytes, err := wsutil.ReadServerText(client)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertMessage(t, ERR, string(GetEmptyTarget()), "Bad Request!", replyBytes)
+}
+
 // Protocol integration tests
 
 func TestSendMessage(t *testing.T) {
@@ -61,13 +80,88 @@ func TestSendMessage(t *testing.T) {
 
 }
 
+func TestREPLY(t *testing.T) {
+	server, client := net.Pipe()
+
+	go HandleWebsocket(server)
+
+	request, err := Message{REPLY, "Some.Target", "Some value!"}.Bytes()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := wsutil.WriteClientText(client, request); err != nil {
+		t.Error(err)
+		return
+	}
+
+	replyBytes, err := wsutil.ReadServerText(client)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertMessage(t, ERR, "Some.Target", "Clients may not send messages of the type REPLY!", replyBytes)
+}
+
+func TestERR(t *testing.T) {
+	server, client := net.Pipe()
+
+	go HandleWebsocket(server)
+
+	request, err := Message{ERR, "Some.Target", "Some value!"}.Bytes()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := wsutil.WriteClientText(client, request); err != nil {
+		t.Error(err)
+		return
+	}
+
+	replyBytes, err := wsutil.ReadServerText(client)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertMessage(t, ERR, "Some.Target", "Clients may not send messages of the type ERR!", replyBytes)
+}
+
+func TestUnsupportedOption(t *testing.T) {
+	server, client := net.Pipe()
+
+	go HandleWebsocket(server)
+
+	request, err := Message{"UNSUPPORTED", "Some.Target", "Some value!"}.Bytes()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := wsutil.WriteClientText(client, request); err != nil {
+		t.Error(err)
+		return
+	}
+
+	replyBytes, err := wsutil.ReadServerText(client)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertMessage(t, ERR, "Some.Target", "Unsupported Operation UNSUPPORTED!", replyBytes)
+}
+
 func TestSUB(t *testing.T) {
 	done := make(chan bool)
 	timeout := time.After(1 * time.Second)
 
 	server, client := net.Pipe()
 
-	request := NewMessage(SUB, "Some.Target", "")
+	request := NewMessage(SUB, "Some.Target.SUB", "")
 
 	go HandleWebsocket(server)
 
@@ -82,7 +176,7 @@ func TestSUB(t *testing.T) {
 		return
 	}
 
-	msg := NewMessage(REPLY, "Some.Target", "SomeValue")
+	msg := NewMessage(REPLY, "Some.Target.SUB", "Some Value!")
 
 	go func() {
 		received, err := wsutil.ReadServerText(client)
@@ -101,18 +195,107 @@ func TestSUB(t *testing.T) {
 		done <- true
 	}()
 
+	quit := make(chan bool)
+
 	go func() {
 		for {
-			ctx.GetContext().GetBroker().Publish("Some.Target", "SomeValue")
-			time.Sleep(50 * time.Millisecond)
+			select {
+			case <-quit:
+				break
+			default:
+				ctx.GetContext().GetBroker().Publish("Some.Target.SUB", "Some Value!")
+				time.Sleep(50 * time.Millisecond)
+			}
 		}
 	}()
 
 	select {
 	case <-timeout:
+		quit <- true
 		t.Fatal("Test didn't finish in time...")
 	case <-done:
+		quit <- true
 	}
+}
+
+func TestUNSUB(t *testing.T) {
+	server, client := net.Pipe()
+
+	go HandleWebsocket(server)
+
+	request, err := Message{SUB, "Some.Target.UNSUB", ""}.Bytes()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		response, err := wsutil.ReadServerText(client)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		assertMessage(t, REPLY, "Some.Target.UNSUB", "Some Value!", response)
+		wg.Done()
+	}()
+
+	if err := wsutil.WriteClientText(client, request); err != nil {
+		t.Error(err)
+		return
+	}
+
+	quit := make(chan bool)
+
+	go func() {
+		for {
+			select {
+			case <-quit:
+				break
+			default:
+				ctx.GetContext().GetBroker().Publish("Some.Target.UNSUB", "Some Value!")
+				time.Sleep(50 * time.Millisecond)
+			}
+		}
+	}()
+
+	wg.Wait()
+
+	unsubRequest, err := Message{UNSUB, "Some.Target.UNSUB", ""}.Bytes()
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := wsutil.WriteClientText(client, unsubRequest); err != nil {
+		t.Error(err)
+		return
+	}
+
+	fail := make(chan bool)
+	timeout := time.After(100 * time.Millisecond)
+
+	go func() {
+		_, err := wsutil.ReadServerText(client)
+		if err != nil {
+			t.Error(err)
+			return
+		}
+
+		fail <- true
+	}()
+
+	select {
+	case <-fail:
+		t.Fatal("Test failed! Received message after UNSUB request!")
+	case <-timeout:
+		t.Log("Timeout on listening for response. Test finished successfully!")
+	}
+
+	quit <- true
 }
 
 func TestGET(t *testing.T) {
@@ -121,7 +304,7 @@ func TestGET(t *testing.T) {
 
 	server, client := net.Pipe()
 
-	request := NewMessage(GET, "Some.Target", "")
+	request := NewMessage(GET, "Some.Target.GET", "")
 
 	go HandleWebsocket(server)
 
@@ -136,7 +319,7 @@ func TestGET(t *testing.T) {
 		return
 	}
 
-	msg := NewMessage(REPLY, "Some.Target", "SomeValue")
+	msg := NewMessage(REPLY, "Some.Target.GET", "Some Value!")
 
 	go func() {
 		received, err := wsutil.ReadServerText(client)
@@ -155,11 +338,20 @@ func TestGET(t *testing.T) {
 		done <- true
 	}()
 
+	quit := make(chan bool)
+
 	go func() {
-		for {
-			ctx.GetContext().GetBroker().Publish("Some.Target", "SomeValue")
-			time.Sleep(50 * time.Millisecond)
-		}
+		go func() {
+			for {
+				select {
+				case <-quit:
+					break
+				default:
+					ctx.GetContext().GetBroker().Publish("Some.Target.GET", "Some Value!")
+					time.Sleep(50 * time.Millisecond)
+				}
+			}
+		}()
 	}()
 
 	select {
@@ -167,6 +359,8 @@ func TestGET(t *testing.T) {
 		t.Fatal("Test didn't finish in time...")
 	case <-done:
 	}
+
+	quit <- true
 }
 
 func TestHIST(t *testing.T) {
@@ -258,10 +452,7 @@ func TestHIST(t *testing.T) {
 			return nil, err
 		}
 
-		var reply Message
-		if err := json.Unmarshal(received, &reply); err != nil {
-			return nil, err
-		}
+		reply, err := decodeMessage(received)
 
 		var history db.History
 		if err := json.Unmarshal([]byte(reply.Value), &history); err != nil {
@@ -313,4 +504,56 @@ func TestHIST(t *testing.T) {
 	assert.Equal(t, "Message No. 0", history[0].Message.Value)
 	assert.Equal(t, "Message No. 2", history[1].Message.Value)
 	assert.Equal(t, "Message No. 4", history[2].Message.Value)
+}
+
+func TestHISTNegative(t *testing.T) {
+	server, client := net.Pipe()
+	go HandleWebsocket(server)
+
+	request := Message{
+		OpCode: HIST,
+		Target: "Some.Target",
+		Value:  "abcdefghijklmnopqrstuvwxyz",
+	}
+
+	requestBytes, err := json.Marshal(request)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if err := wsutil.WriteClientText(client, requestBytes); err != nil {
+		t.Error(err)
+		return
+	}
+
+	received, err := wsutil.ReadServerText(client)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assertMessage(t, ERR, "Some.Target", "Bad parameters!", received)
+
+}
+
+func decodeMessage(messageJSON []byte) (Message, error) {
+	var output Message
+	if err := json.Unmarshal(messageJSON, &output); err != nil {
+		return Message{}, err
+	}
+
+	return output, nil
+}
+
+func assertMessage(t *testing.T, expectedOpCode OpCode, expectedTarget string, expectedValue string, receivedWebsocketMessage []byte) {
+	msg, err := decodeMessage(receivedWebsocketMessage)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	assert.Equal(t, expectedOpCode, msg.OpCode)
+	assert.Equal(t, TargetAddress(expectedTarget), msg.Target)
+	assert.Equal(t, expectedValue, msg.Value)
 }
