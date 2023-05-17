@@ -113,7 +113,7 @@ func HandleWebsocket(conn net.Conn) {
 				return
 			}
 		case ERR:
-			if err = sendMessage(conn, NewMessage(ERR, content.Target, "Clients may not send messages of the type ERROR")); err != nil {
+			if err = sendMessage(conn, NewMessage(ERR, content.Target, "Clients may not send messages of the type ERR!")); err != nil {
 				return
 			}
 		default:
