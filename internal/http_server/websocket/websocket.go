@@ -19,6 +19,7 @@ var logger logging.Logger
 
 var FatalWebsocketError error = errors.New("fatal websocket error")
 
+// HandleWebsocket handles the websocket connections.
 func HandleWebsocket(conn net.Conn) {
 	var err error
 	clientAddress := conn.RemoteAddr()
@@ -124,6 +125,7 @@ func HandleWebsocket(conn net.Conn) {
 	}
 }
 
+// handleGET handles websocket request with the GET OpCode
 func handleGET(conn net.Conn, content *Message) error {
 	broker := ctx.GetContext().GetBroker()
 	temporarySubscriber := broker.AddSubscriber()
@@ -150,6 +152,7 @@ func handleGET(conn net.Conn, content *Message) error {
 	return nil
 }
 
+// handleHIST handles websocket requests with the HIST OpCode
 func handleHIST(conn net.Conn, content *Message) error {
 	clientAddress := conn.RemoteAddr()
 
@@ -238,6 +241,7 @@ func handleHIST(conn net.Conn, content *Message) error {
 	return nil
 }
 
+// sendMessage sends the Message msg via the net.Conn connection conn
 func sendMessage(conn net.Conn, msg Message) error {
 	var err error
 
