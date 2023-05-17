@@ -33,4 +33,19 @@ func Tick() {
 
 	broker := ctx.GetContext().GetBroker()
 	broker.Publish("CPU.CpuInfo", string(jsonOutput))
+
+	go func() {
+		usageMap, err := calculateCPUUsage()
+		if err != nil {
+			logger.Error(fmt.Sprintf("Couldn't calculate cpu usage! Reason %s", err))
+		}
+
+		jsonOutput, err := json.Marshal(usageMap)
+		if err != nil {
+			logger.Error(fmt.Sprintf("Couldn't encode cpu usage! Reason %s", err))
+			return
+		}
+
+		broker.Publish("CPU.Usage", string(jsonOutput))
+	}()
 }
