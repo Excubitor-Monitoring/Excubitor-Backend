@@ -1,6 +1,7 @@
 package http_server
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/golang-jwt/jwt/v5"
@@ -119,6 +120,88 @@ func TestHandleAuthRequestUnknownMethod(t *testing.T) {
 	assert.Equal(t, "Unsupported authentication method: UnknownMethod", httpError.Message)
 	assert.Equal(t, "/auth", httpError.Path)
 	assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+}
+
+func TestHandleAuthRequestPAMNilCredentials(t *testing.T) {
+	type testParams struct {
+		description          string
+		method               string
+		credentials          map[string]interface{}
+		expectedErrorMessage string
+		expectedStatusCode   int
+	}
+
+	for _, params := range []testParams{
+		{
+			description:          "Nil credentials",
+			method:               "PAM",
+			credentials:          nil,
+			expectedErrorMessage: "Credentials not specified!",
+			expectedStatusCode:   http.StatusBadRequest,
+		},
+		{
+			description: "Nil username",
+			method:      "PAM",
+			credentials: map[string]interface{}{
+				"username": nil,
+				"password": "SomePassword",
+			},
+			expectedErrorMessage: "Username not specified!",
+			expectedStatusCode:   http.StatusBadRequest,
+		},
+		{
+			description: "Nil password",
+			method:      "PAM",
+			credentials: map[string]interface{}{
+				"username": "SomeUser",
+				"password": nil,
+			},
+			expectedErrorMessage: "Password not specified!",
+			expectedStatusCode:   http.StatusBadRequest,
+		},
+	} {
+		t.Run(params.description, func(t *testing.T) {
+			var err error
+
+			logger, err = logging.GetConsoleLoggerInstance()
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			payload, err := json.Marshal(authRequest{Method: params.method, Credentials: params.credentials})
+
+			req := httptest.NewRequest(http.MethodPost, "/auth",
+				bytes.NewReader(payload))
+			req.RemoteAddr = "SampleAddress"
+			w := httptest.NewRecorder()
+
+			handleAuthRequest(w, req)
+
+			res := w.Result()
+			defer func(Body io.ReadCloser) {
+				err := Body.Close()
+				if err != nil {
+					t.Error(err)
+					return
+				}
+			}(res.Body)
+
+			body, err := io.ReadAll(res.Body)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+
+			httpError := parseHTTPError(body)
+
+			assert.Equal(t, params.expectedStatusCode, res.StatusCode)
+			assert.Equal(t, params.expectedErrorMessage, httpError.Message)
+			assert.Equal(t, httpError.Path, "/auth")
+			assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
+		})
+	}
+
 }
 
 func TestHandleAuthRequestPAMInvalidCredentials(t *testing.T) {
