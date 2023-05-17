@@ -8,6 +8,7 @@ import (
 	"strings"
 )
 
+// compress compresses a string using zlib
 func compress(text string) (string, error) {
 	buf := new(bytes.Buffer)
 
@@ -24,6 +25,7 @@ func compress(text string) (string, error) {
 	return buf.String(), nil
 }
 
+// decompress decompresses a string using zlib
 func decompress(zlibString string) (string, error) {
 	reader, err := zlib.NewReader(strings.NewReader(zlibString))
 	if err != nil {

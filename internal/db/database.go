@@ -27,6 +27,7 @@ const createStatement string = `
 	);
 `
 
+// InitDatabase initializes the database connection and starts all recurring jobs on the database.
 func InitDatabase() error {
 	var err error
 
@@ -70,6 +71,7 @@ func InitDatabase() error {
 	return nil
 }
 
+// startPurgeCycle starts the recurring job of purging all old database entries.
 func startPurgeCycle(db *sql.DB) error {
 	purgeCycleString := config.GetConfig().String("data.purge_cycle")
 	purgeCycle, err := time.ParseDuration(purgeCycleString)
@@ -92,6 +94,7 @@ func startPurgeCycle(db *sql.DB) error {
 	return nil
 }
 
+// purgeOldEntries purges all old database entries.
 func purgeOldEntries(db *sql.DB) error {
 	storageTimeString := config.GetConfig().String("data.storage_time")
 	storageTime, err := time.ParseDuration(storageTimeString)
@@ -127,6 +130,8 @@ func purgeOldEntries(db *sql.DB) error {
 	return nil
 }
 
+// vacuumDB executes a VACUUM statement on the sqlite database.
+// This shrinks the database's size so that it does not become unnecessarily large.
 func vacuumDB(db *sql.DB) error {
 	logger.Debug("Vacuuming database...")
 

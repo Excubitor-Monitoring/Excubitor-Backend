@@ -13,6 +13,7 @@ func GetWriter() *Writer {
 	return writer
 }
 
+// AddHistoryEntry adds an entry to the history table.
 func (writer *Writer) AddHistoryEntry(target string, content string) error {
 	stmt, err := writer.db.Prepare(`
 		INSERT INTO history (time, target, content) VALUES (?, ?, ?);

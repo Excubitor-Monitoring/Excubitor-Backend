@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// HistoryMessage serves as a model to describe entries in the history table.
 type HistoryMessage struct {
 	Timestamp time.Time `json:"timestamp"`
 	Message   struct {
