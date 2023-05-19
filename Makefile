@@ -30,7 +30,7 @@ package/deb:
 	cp bin/excubitor-backend package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
 	# Add systemd unit file to package
 	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system
-	cp package/systemd/excubitor.service build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system/
+	cp package/systemd/excubitor.service package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system/
 	# Add config file to package
 	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
 	cp config.sample.yml package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
