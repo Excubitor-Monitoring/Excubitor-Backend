@@ -24,13 +24,13 @@ test/coverage:
 package/deb:
 	make build
 	# Add binary to package
-	mkdir -p build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
-	cp bin/excubitor-backend build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
+	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
+	cp bin/excubitor-backend package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
 	# Add systemd unit file to package
-	mkdir -p build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system
-	cp build/systemd/excubitor.service build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system/
+	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system
+	cp package/systemd/excubitor.service build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system/
 	# Add config file to package
-	mkdir -p build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
-	cp config.sample.yml build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
+	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
+	cp config.sample.yml package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
 	# Assemble package
-	dpkg-deb --build --root-owner-group build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64
+	dpkg-deb --build --root-owner-group package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64
