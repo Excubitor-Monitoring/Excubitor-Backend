@@ -22,10 +22,10 @@ test/coverage:
 	$(GOCOVER) -func=coverage.out
 	$(GOCOVER) -html=coverage.out
 package/deb:
-	build
+	make build
 	# Add binary to package
 	mkdir -p build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
-	cp bin/excubitor_backend build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
+	cp bin/excubitor-backend build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
 	# Add systemd unit file to package
 	mkdir -p build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system
 	cp build/systemd/excubitor.service build/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system/
