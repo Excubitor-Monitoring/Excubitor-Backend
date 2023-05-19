@@ -1,3 +1,5 @@
+.PHONY: install-deps build run test test/coverage package/deb
+
 GO=go
 GOTEST=$(GO) test
 GOCOVER=$(GO) tool cover
