@@ -5,7 +5,7 @@ GOMOD=$(GO) mod
 GOBUILD=$(GO) build
 GORUN=$(GO) run
 
-EXCUBITOR_VERSION="0.0.1-alpha"
+EXCUBITOR_VERSION=0.0.1-alpha
 
 install-deps:
 	echo "Installing all go dependencies"
