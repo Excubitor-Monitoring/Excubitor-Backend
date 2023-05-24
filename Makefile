@@ -23,16 +23,21 @@ test/coverage:
 	$(GOTEST) -v -coverprofile=coverage.out ./...
 	$(GOCOVER) -func=coverage.out
 	$(GOCOVER) -html=coverage.out
-package/deb:
+install:
 	make build
-	# Add binary to package
-	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
-	cp bin/excubitor-backend package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/opt/excubitor/bin
-	# Add systemd unit file to package
-	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system
-	cp package/systemd/excubitor.service package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/systemd/system/
-	# Add config file to package
-	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
-	cp config.sample.yml package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/etc/excubitor
+	# Install Configuration file
+	mkdir -p $(DESTDIR)/etc/excubitor
+	install -m 0755 config.sample.yml $(DESTDIR)/etc/excubitor/config.yml
+	# Install binary
+	mkdir -p $(DESTDIR)/opt/excubitor/bin
+	install -m 0755 bin/excubitor-backend $(DESTDIR)/opt/excubitor/bin/excubitor-backend
+	# Install systemd unit file
+	mkdir -p $(DESTDIR)/etc/systemd/system
+	install -m 0755 package/systemd/excubitor.service $(DESTDIR)/etc/systemd/system/excubitor.service
+package/deb:
+	make DESTDIR=package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/ install
+	# Copying control file and adding version
+	cp package/deb/control package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN
+	echo "Version: $(EXCUBITOR_VERSION)" >> package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
 	# Assemble package
 	dpkg-deb --build --root-owner-group package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64
