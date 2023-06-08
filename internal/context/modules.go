@@ -17,7 +17,7 @@ func (v Version) string() string {
 
 type Component struct {
 	TabName string `json:"tab_name"` // Name of the tab in the frontend
-	JSFile  string `json:"string"`   // JavaScript file that contains the WebComponent
+	JSFile  string `json:"js"`       // JavaScript file that contains the WebComponent
 	Tag     string `json:"tag"`      // Name of the HTML tag to import
 }
 

@@ -1,4 +1,4 @@
-.PHONY: install-deps build run test test/coverage package/deb
+.PHONY: install-deps build run test test/coverage install package/deb components build-component
 
 GO=go
 GOTEST=$(GO) test
@@ -7,11 +7,31 @@ GOMOD=$(GO) mod
 GOBUILD=$(GO) build
 GORUN=$(GO) run
 
+NPM=npm
+NPMI=$(NPM) install
+NPMBUILD=$(NPM) run build
+
 EXCUBITOR_VERSION=0.0.1-alpha
 
 install-deps:
 	echo "Installing all go dependencies"
 	$(GOMOD) download
+components:
+	git submodule init
+	echo "Building frontend components"
+	echo "Building CPU-Info component"
+	make COMPDIR=components/CPU-Info MODNAME=cpu FILENAME=info.js build-component
+	echo "Building CPU-Usage component"
+	make COMPDIR=components/CPU-Usage MODNAME=cpu FILENAME=usage.js build-component
+	echo "Building RAM-Usage component"
+	make COMPDIR=components/RAM-Usage MODNAME=memory FILENAME=ram.js build-component
+	echo "Building Swap-Usage component"
+	make COMPDIR=components/Swap-Usage MODNAME=memory FILENAME=swap.js build-component
+build-component:
+	$(NPMI) --prefix $(COMPDIR)
+	$(NPMBUILD) --prefix $(COMPDIR)
+	mkdir -p internal/frontend/static/internal/$(MODNAME)
+	mv $(COMPDIR)/dist/index.js internal/frontend/static/internal/$(MODNAME)/$(FILENAME)
 build:
 	echo "Compiling project for current platform"
 	$(GOBUILD) -o bin/excubitor-backend ./cmd/main.go
