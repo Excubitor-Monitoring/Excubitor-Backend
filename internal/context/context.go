@@ -8,15 +8,6 @@ import (
 
 var singletonOnce sync.Once
 
-type Module struct {
-	Name         string `json:"name"`
-	tickFunction func()
-}
-
-func NewModule(name string, tickFunction func()) *Module {
-	return &Module{name, tickFunction}
-}
-
 type Context struct {
 	broker  *pubsub.Broker
 	modules map[string]*Module

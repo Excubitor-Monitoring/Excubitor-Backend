@@ -23,15 +23,9 @@ func Start() error {
 
 	logger.Info(fmt.Sprintf("Starting HTTP Server on port %d", port))
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/info", info)
-	mux.HandleFunc("/auth", handleAuthRequest)
-	mux.HandleFunc("/auth/refresh", handleRefreshRequest)
-	mux.Handle("/ws", queryAuth(http.HandlerFunc(wsInit)))
-
 	cors := getCORSHandler()
 
-	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), cors.Handler(mux))
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), cors.Handler(http.HandlerFunc(Serve)))
 	if err != nil {
 		return err
 	}

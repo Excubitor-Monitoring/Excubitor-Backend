@@ -12,7 +12,14 @@ import (
 )
 
 func TestInfo(t *testing.T) {
-	ctx.GetContext().RegisterModule(ctx.NewModule("TestModule", func() {}))
+	ctx.GetContext().RegisterModule(
+		ctx.NewModule(
+			"TestModule",
+			ctx.NewVersion(0, 0, 1),
+			[]ctx.Component{},
+			func() {},
+		),
+	)
 
 	req := httptest.NewRequest(http.MethodGet, "/info", nil)
 	w := httptest.NewRecorder()
@@ -34,7 +41,7 @@ func TestInfo(t *testing.T) {
 	}
 
 	assert.Equal(t, 200, res.StatusCode)
-	assert.JSONEq(t, `{"authentication": { "method": "PAM" }, "modules": [ { "name": "TestModule" } ] }`, string(body))
+	assert.JSONEq(t, `{"authentication": { "method": "PAM" }, "modules": [ { "name": "TestModule", "version":"0.0.1", "components": [] } ] }`, string(body))
 }
 
 func TestInfoMethodNotAllowed(t *testing.T) {
