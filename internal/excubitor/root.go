@@ -59,13 +59,23 @@ func Execute() error {
 			[]ctx.Component{
 				{
 					TabName: "CPU Information",
-					JSFile:  "static/internal/CPU-Info/index.js",
+					JSFile:  "static/internal/CPU/info.js",
 					Tag:     "cpu-info",
 				},
 				{
 					TabName: "CPU Clock History",
-					JSFile:  "static/internal/CPU-Info/history.js",
+					JSFile:  "static/internal/CPU/clock-history.js",
 					Tag:     "cpu-clock-history",
+				},
+				{
+					TabName: "CPU Usage",
+					JSFile:  "static/internal/CPU/usage.js",
+					Tag:     "cpu-usage",
+				},
+				{
+					TabName: "CPU Usage History",
+					JSFile:  "static/internal/CPU/usage-history.js",
+					Tag:     "cpu-usage-history",
 				},
 			},
 			cpu.Tick,
@@ -79,22 +89,22 @@ func Execute() error {
 			[]ctx.Component{
 				{
 					TabName: "RAM Usage",
-					JSFile:  "static/internal/RAM-Usage/index.js",
+					JSFile:  "static/internal/memory/ram.js",
 					Tag:     "ram-usage",
 				},
 				{
 					TabName: "RAM Usage History",
-					JSFile:  "static/internal/RAM-Usage/history.js",
+					JSFile:  "static/internal/memory/ram-history.js",
 					Tag:     "ram-usage-history",
 				},
 				{
 					TabName: "Swap Usage",
-					JSFile:  "static/internal/Swap-Usage/index.js",
+					JSFile:  "static/internal/memory/swap.js",
 					Tag:     "swap-usage",
 				},
 				{
 					TabName: "Swap Usage History",
-					JSFile:  "static/internal/Swap-Usage/history.js",
+					JSFile:  "static/internal/memory/swap-history.js",
 					Tag:     "swap-usage-history",
 				},
 			},

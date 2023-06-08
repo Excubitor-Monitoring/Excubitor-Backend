@@ -1,12 +1,13 @@
 package http_server
 
 import (
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/frontend"
 	"net/http"
 	"strings"
 )
 
 func Serve(w http.ResponseWriter, r *http.Request) {
-	path := strings.Split(r.URL.Path, "/")
+	path := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	length := len(path)
 
 	var handler http.Handler
@@ -20,8 +21,8 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 		handler = http.HandlerFunc(handleAuthRequest)
 	case length == 2 && path[0] == "auth" && path[1] == "refresh":
 		handler = http.HandlerFunc(handleRefreshRequest)
-	case path[0] == "static":
-		handler = http.HandlerFunc(handleStaticFiles)
+	case path[0] == "static" && r.Method == "GET":
+		handler = http.HandlerFunc(frontend.StaticFileServer)
 	default:
 		http.NotFound(w, r)
 		return
