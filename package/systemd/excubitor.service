@@ -1,0 +1,8 @@
+[Unit]
+Description=Service to start and stop Excubitor
+
+[Service]
+ExecStart=/opt/excubitor/bin/excubitor-backend --config /etc/excubitor/config.yml
+
+[Install]
+WantedBy=multi-user.target

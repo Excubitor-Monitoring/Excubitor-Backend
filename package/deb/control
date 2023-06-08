@@ -1,0 +1,4 @@
+Package: Excubitor
+Architecture: amd64
+Maintainer: Lucca Greschner <luccagreschner@gmail.com>
+Description: Web application to monitor your linux system
