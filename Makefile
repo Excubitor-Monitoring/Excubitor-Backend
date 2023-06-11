@@ -33,9 +33,29 @@ build-component:
 	mkdir -p internal/frontend/static/internal/$(MODNAME)
 	mv $(COMPDIR)/dist/index.js internal/frontend/static/internal/$(MODNAME)/$(FILENAME)
 build:
+	make components
 	echo "Compiling project for current platform"
 	$(GOBUILD) -o bin/excubitor-backend ./cmd/main.go
+clean:
+	echo "Removing binary packages"
+	rm -rf bin/excubitor-backend
+	echo "Removing built javascript files"
+	rm -rf components/CPU-Info/dist
+	rm -rf components/CPU-Usage/dist
+	rm -rf components/RAM-Usage/dist
+	rm -rf components/Swap-Usage/dist
+	rm -rf internal/frontend/static/internal/*
+	echo "Removing javascript dependencies"
+	rm -rf components/CPU-Info/node_modules
+	rm -rf components/CPU-Usage/node_modules
+	rm -rf components/RAM-Usage/node_modules
+	rm -rf components/Swap-Usage/node_modules
+	echo "Removing packaging files"
+	rm -rf package/deb/excubitor_*
+	echo "Removing coverage reports"
+	rm -rf coverage.out
 run:
+	make components
 	$(GORUN) cmd/main.go
 test:
 	$(GOTEST) -v ./...
