@@ -59,22 +59,22 @@ func Execute() error {
 			[]ctx.Component{
 				{
 					TabName: "CPU Information",
-					JSFile:  "static/internal/CPU/info.js",
+					JSFile:  "static/internal/cpu/info.js",
 					Tag:     "cpu-info",
 				},
 				{
 					TabName: "CPU Clock History",
-					JSFile:  "static/internal/CPU/clock-history.js",
+					JSFile:  "static/internal/cpu/clock-history.js",
 					Tag:     "cpu-clock-history",
 				},
 				{
 					TabName: "CPU Usage",
-					JSFile:  "static/internal/CPU/usage.js",
+					JSFile:  "static/internal/cpu/usage.js",
 					Tag:     "cpu-usage",
 				},
 				{
 					TabName: "CPU Usage History",
-					JSFile:  "static/internal/CPU/usage-history.js",
+					JSFile:  "static/internal/cpu/usage-history.js",
 					Tag:     "cpu-usage-history",
 				},
 			},
