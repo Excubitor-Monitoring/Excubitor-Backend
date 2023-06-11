@@ -10,6 +10,11 @@ import (
 var embeddedFiles embed.FS
 
 func StaticFileServer(w http.ResponseWriter, r *http.Request) {
+	if strings.HasSuffix(r.URL.Path, "/") {
+		http.NotFound(w, r)
+		return
+	}
+
 	path := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
 	length := len(path)
 
