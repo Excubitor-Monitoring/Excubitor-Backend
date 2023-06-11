@@ -11,6 +11,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
       - name: Install PAM dependency
         run: sudo apt install -y libpam0g-dev
