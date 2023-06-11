@@ -1,3 +1,3 @@
 [submodule "components"]
 	path = components
-	url = git@github.com:Excubitor-Monitoring/Frontend-Components
+	url = https://github.com/Excubitor-Monitoring/Frontend-Components.git
