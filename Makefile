@@ -18,14 +18,14 @@ install-deps:
 	$(GOMOD) download
 components:
 	git submodule init
-	echo "Building frontend components"
-	echo "Building CPU-Info component"
+	@echo "Building frontend components"
+	@echo "Building CPU-Info component"
 	make COMPDIR=components/CPU-Info MODNAME=cpu FILENAME=info.js build-component
-	echo "Building CPU-Usage component"
+	@echo "Building CPU-Usage component"
 	make COMPDIR=components/CPU-Usage MODNAME=cpu FILENAME=usage.js build-component
-	echo "Building RAM-Usage component"
+	@echo "Building RAM-Usage component"
 	make COMPDIR=components/RAM-Usage MODNAME=memory FILENAME=ram.js build-component
-	echo "Building Swap-Usage component"
+	@echo "Building Swap-Usage component"
 	make COMPDIR=components/Swap-Usage MODNAME=memory FILENAME=swap.js build-component
 build-component:
 	$(NPMI) --prefix $(COMPDIR)
@@ -34,32 +34,34 @@ build-component:
 	mv $(COMPDIR)/dist/index.js internal/frontend/static/internal/$(MODNAME)/$(FILENAME)
 build:
 	make components
-	echo "Compiling project for current platform"
+	@echo "Compiling project for current platform"
 	$(GOBUILD) -o bin/excubitor-backend ./cmd/main.go
 clean:
-	echo "Removing binary packages"
+	@echo "Removing binary packages"
 	rm -rf bin/excubitor-backend
-	echo "Removing built javascript files"
+	@echo "Removing built javascript files"
 	rm -rf components/CPU-Info/dist
 	rm -rf components/CPU-Usage/dist
 	rm -rf components/RAM-Usage/dist
 	rm -rf components/Swap-Usage/dist
 	rm -rf internal/frontend/static/internal/*
-	echo "Removing javascript dependencies"
+	@echo "Removing javascript dependencies"
 	rm -rf components/CPU-Info/node_modules
 	rm -rf components/CPU-Usage/node_modules
 	rm -rf components/RAM-Usage/node_modules
 	rm -rf components/Swap-Usage/node_modules
-	echo "Removing packaging files"
+	@echo "Removing packaging files"
 	rm -rf package/deb/excubitor_*
-	echo "Removing coverage reports"
+	@echo "Removing coverage reports"
 	rm -rf coverage.out
 run:
 	make components
 	$(GORUN) cmd/main.go
 test:
+	make components
 	$(GOTEST) -v ./...
 test/coverage:
+	make components
 	$(GOTEST) -v -coverprofile=coverage.out ./...
 	$(GOCOVER) -func=coverage.out
 	$(GOCOVER) -html=coverage.out
@@ -79,6 +81,6 @@ package/deb:
 	# Copying control file and adding version
 	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN
 	cp package/deb/control package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
-	echo "Version: $(EXCUBITOR_VERSION)" >> package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
+	@echo "Version: $(EXCUBITOR_VERSION)" >> package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
 	# Assemble package
 	dpkg-deb --build --root-owner-group package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64
