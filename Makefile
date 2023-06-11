@@ -7,7 +7,7 @@ GOMOD=$(GO) mod
 GOBUILD=$(GO) build
 GORUN=$(GO) run
 
-NPM=npm
+NPM=yarn
 NPMI=$(NPM) install
 NPMBUILD=$(NPM) run build
 
