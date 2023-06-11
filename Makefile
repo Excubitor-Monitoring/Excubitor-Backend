@@ -28,8 +28,8 @@ components:
 	@echo "Building Swap-Usage component"
 	make COMPDIR=components/Swap-Usage MODNAME=memory FILENAME=swap.js build-component
 build-component:
-	$(NPMI) --prefix $(COMPDIR)
-	$(NPMBUILD) --prefix $(COMPDIR)
+	$(NPMI) --cwd $(COMPDIR)
+	$(NPMBUILD) --cwd $(COMPDIR)
 	mkdir -p internal/frontend/static/internal/$(MODNAME)
 	mv $(COMPDIR)/dist/index.js internal/frontend/static/internal/$(MODNAME)/$(FILENAME)
 build:
