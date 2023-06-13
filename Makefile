@@ -7,9 +7,9 @@ GOMOD=$(GO) mod
 GOBUILD=$(GO) build
 GORUN=$(GO) run
 
-NPM=npm
-NPMI=$(NPM) install
-NPMBUILD=$(NPM) run build
+NPM=yarn
+NPMI=install
+NPMBUILD=run build
 
 EXCUBITOR_VERSION=0.0.1-alpha
 
@@ -28,8 +28,8 @@ components:
 	@echo "Building Swap-Usage component"
 	make COMPDIR=components/Swap-Usage MODNAME=memory FILENAME=swap.js build-component
 build-component:
-	$(NPMI) --prefix $(COMPDIR)
-	$(NPMBUILD) --prefix $(COMPDIR)
+	$(NPM) --cwd $(COMPDIR) $(NPMI)
+	$(NPM) --cwd $(COMPDIR) $(NPMBUILD)
 	mkdir -p internal/frontend/static/internal/$(MODNAME)
 	mv $(COMPDIR)/dist/index.js internal/frontend/static/internal/$(MODNAME)/$(FILENAME)
 build:
