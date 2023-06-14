@@ -48,18 +48,7 @@ func info(w http.ResponseWriter, r *http.Request) {
 		}
 		break
 	default:
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-
-		jsonResult, err := json.Marshal(NewHTTPError(fmt.Sprintf("Method %s not allowed!", r.Method), r.RequestURI))
-		if err != nil {
-			return
-		}
-
-		_, err = w.Write(jsonResult)
-		if err != nil {
-			return
-		}
+		ReturnError(w, r, http.StatusMethodNotAllowed, "Only HTTP method GET is supported on /info")
 	}
 }
 
@@ -67,6 +56,7 @@ func wsInit(w http.ResponseWriter, r *http.Request) {
 	conn, _, _, err := ws.UpgradeHTTP(r, w)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Connection from %s couldn't be upgraded: %s", r.RemoteAddr, err))
+		return
 	}
 
 	websocket.HandleWebsocket(conn)
