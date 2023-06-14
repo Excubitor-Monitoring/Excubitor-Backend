@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/helper"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/models"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/websocket"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
@@ -48,7 +49,7 @@ func info(w http.ResponseWriter, r *http.Request) {
 		}
 		break
 	default:
-		ReturnError(w, r, http.StatusMethodNotAllowed, "Only HTTP method GET is supported on /info")
+		helper.ReturnError(w, r, http.StatusMethodNotAllowed, "Only HTTP method GET is supported on /info.")
 	}
 }
 

@@ -3,6 +3,7 @@ package http_server
 import (
 	"fmt"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/frontend"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/helper"
 	"net/http"
 	"strings"
 )
@@ -40,7 +41,7 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 		handler = http.HandlerFunc(frontend.StaticFileServer)
 	default:
 		logger.Trace(fmt.Sprintf("[%s]: %s - %s -> NOT FOUND", remoteAddress, r.URL.Path, remoteAddress))
-		ReturnError(w, r, 404, fmt.Sprintf("Couldn't find requested resource %s!", r.URL.Path))
+		helper.ReturnError(w, r, 404, fmt.Sprintf("Couldn't find requested resource %s!", r.URL.Path))
 		http.NotFound(w, r)
 		return
 	}

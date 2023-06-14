@@ -2,7 +2,7 @@ package frontend
 
 import (
 	"embed"
-	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/helper"
 	"net/http"
 	"strings"
 )
@@ -23,7 +23,7 @@ func StaticFileServer(w http.ResponseWriter, r *http.Request) {
 	case length > 1 && path[1] == "internal":
 		http.FileServer(http.FS(embeddedFiles)).ServeHTTP(w, r)
 	case length > 1 && path[1] == "external":
-		http_server.ReturnError(w, r, http.StatusNotImplemented, "External modules are not implemented yet!")
+		helper.ReturnError(w, r, http.StatusNotImplemented, "External modules are not implemented yet!")
 	default:
 		http.NotFound(w, r)
 	}

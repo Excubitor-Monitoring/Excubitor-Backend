@@ -1,7 +1,8 @@
-package http_server
+package helper
 
 import (
 	"encoding/json"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"net/http"
 	"time"
 )
@@ -24,6 +25,7 @@ func ReturnError(w http.ResponseWriter, r *http.Request, status int, reason stri
 	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
 
+	logger := logging.GetLogger()
 	httpError := NewHTTPError(reason, r.RequestURI)
 
 	bytes, err := json.Marshal(httpError)

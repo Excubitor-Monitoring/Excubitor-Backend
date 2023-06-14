@@ -1,8 +1,9 @@
 package http_server
 
 import (
-	"fmt"
+	"encoding/json"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/helper"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -96,8 +97,19 @@ func TestInfoMethodNotAllowed(t *testing.T) {
 
 			assert.Equal(t, http.StatusMethodNotAllowed, res.StatusCode)
 			assert.Equal(t, "/info", httpError.Path)
-			assert.Equal(t, fmt.Sprintf("Method %s not allowed!", params.method), httpError.Message)
+			assert.Equal(t, "Only HTTP method GET is supported on /info.", httpError.Message)
 			assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 		})
 	}
+}
+
+func parseHTTPError(jsonInput []byte) helper.Error {
+	output := &helper.Error{}
+
+	err := json.Unmarshal(jsonInput, output)
+	if err != nil {
+		panic(err)
+	}
+
+	return *output
 }
