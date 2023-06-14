@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/helper"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pam"
 	"github.com/golang-jwt/jwt/v5"
 	"io"
@@ -34,7 +35,7 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
-		ReturnError(w, r, http.StatusMethodNotAllowed, "Method is not allowed!")
+		helper.ReturnError(w, r, http.StatusMethodNotAllowed, "Method is not allowed!")
 		return
 	}
 
@@ -42,7 +43,7 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		bytes, err := io.ReadAll(r.Body)
 		if err != nil {
 			logger.Debug(fmt.Sprintf("Couldn't read message body of auth request from %s", r.RemoteAddr))
-			ReturnError(w, r, http.StatusBadRequest, "Can't read message body!")
+			helper.ReturnError(w, r, http.StatusBadRequest, "Can't read message body!")
 			return
 		}
 
@@ -50,7 +51,7 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(bytes, request)
 		if err != nil {
 			logger.Debug(fmt.Sprintf("Couldn't decode message body of auth request from %s", r.RemoteAddr))
-			ReturnError(w, r, http.StatusBadRequest, "Can't decode message body!")
+			helper.ReturnError(w, r, http.StatusBadRequest, "Can't decode message body!")
 			return
 		}
 
@@ -58,19 +59,19 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 		case "PAM":
 			if request.Credentials == nil {
 				logger.Debug(fmt.Sprintf("Could not read credentials in auth request from %s!", r.RemoteAddr))
-				ReturnError(w, r, http.StatusBadRequest, "Credentials not specified!")
+				helper.ReturnError(w, r, http.StatusBadRequest, "Credentials not specified!")
 				return
 			}
 
 			if request.Credentials["username"] == nil {
 				logger.Debug(fmt.Sprintf("Could not read username in pam auth request from %s!", r.RemoteAddr))
-				ReturnError(w, r, http.StatusBadRequest, "Username not specified!")
+				helper.ReturnError(w, r, http.StatusBadRequest, "Username not specified!")
 				return
 			}
 
 			if request.Credentials["password"] == nil {
 				logger.Debug(fmt.Sprintf("Could not read password in pam auth request from %s!", r.RemoteAddr))
-				ReturnError(w, r, http.StatusBadRequest, "Password not specified!")
+				helper.ReturnError(w, r, http.StatusBadRequest, "Password not specified!")
 				return
 			}
 
@@ -89,7 +90,7 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 				accessToken, err := signAccessToken(accessTokenClaims)
 				if err != nil {
 					logger.Error(fmt.Sprintf("Couldn't sign access token for %s! Reason: %s", r.RemoteAddr, err))
-					ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
+					helper.ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
 					return
 				}
 
@@ -102,7 +103,7 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 				refreshToken, err := signRefreshToken(refreshTokenClaims)
 				if err != nil {
 					logger.Error(fmt.Sprintf("Couldn't sign refresh token for %s! Reason: %s", r.RemoteAddr, err))
-					ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
+					helper.ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
 					return
 				}
 
@@ -114,7 +115,7 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 				jsonResponse, err := json.Marshal(tokens)
 				if err != nil {
 					logger.Error(fmt.Sprintf("Couldn't assemble json response for auth request from %s.", r.RemoteAddr))
-					ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
+					helper.ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
 					return
 				}
 
@@ -124,11 +125,11 @@ func handleAuthRequest(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 			} else {
-				ReturnError(w, r, http.StatusUnauthorized, "Invalid username or password!")
+				helper.ReturnError(w, r, http.StatusUnauthorized, "Invalid username or password!")
 				return
 			}
 		default:
-			ReturnError(w, r, http.StatusBadRequest, "Unsupported authentication method: "+request.Method)
+			helper.ReturnError(w, r, http.StatusBadRequest, "Unsupported authentication method: "+request.Method)
 			return
 		}
 	}
@@ -138,7 +139,7 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	if r.Method != http.MethodPost {
-		ReturnError(w, r, http.StatusMethodNotAllowed, "Method is not allowed!")
+		helper.ReturnError(w, r, http.StatusMethodNotAllowed, "Method is not allowed!")
 		return
 	}
 
@@ -146,7 +147,7 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 
 	if !strings.HasPrefix(authorization, "Bearer ") {
 		w.Header().Set("WWW-Authenticate", "Bearer")
-		ReturnError(w, r, http.StatusUnauthorized, "Bearer authentication is needed!")
+		helper.ReturnError(w, r, http.StatusUnauthorized, "Bearer authentication is needed!")
 		return
 	}
 
@@ -159,7 +160,7 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
 			logger.Debug(fmt.Sprintf("Attempt to refresh access token with expired token from %s!", r.RemoteAddr))
-			ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
+			helper.ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
 			return
 		} else if errors.Is(err, jwt.ErrSignatureInvalid) {
 			logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s!", r.RemoteAddr))
@@ -167,14 +168,14 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 			logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s", r.RemoteAddr, err))
 		}
 
-		ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
+		helper.ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
 		return
 	}
 
 	username, err := jwtToken.Claims.GetSubject()
 	if err != nil {
 		logger.Warn(fmt.Sprintf("Couldn't read subject claim of refresh token from %s! Reason: %s", r.RemoteAddr, err))
-		ReturnError(w, r, http.StatusBadRequest, "Token has no subject!")
+		helper.ReturnError(w, r, http.StatusBadRequest, "Token has no subject!")
 		return
 	}
 
@@ -187,14 +188,14 @@ func handleRefreshRequest(w http.ResponseWriter, r *http.Request) {
 	accessToken, err := signAccessToken(accessTokenClaims)
 	if err != nil {
 		logger.Error(fmt.Sprintf("Couldn't sign access token for %s! Reason: %s", r.RemoteAddr, err))
-		ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
+		helper.ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
 		return
 	}
 
 	jsonResponse, err := json.Marshal(refreshResponse{accessToken})
 	if err != nil {
 		logger.Error(fmt.Sprintf("Couldn't encode access token for %s! Reason: %s", r.RequestURI, err))
-		ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
+		helper.ReturnError(w, r, http.StatusInternalServerError, "Internal Server Error!")
 		return
 	}
 
@@ -212,7 +213,7 @@ func bearerAuth(next http.Handler) http.Handler {
 
 		if !strings.HasPrefix(authorization, "Bearer ") {
 			w.Header().Set("WWW-Authenticate", "Bearer")
-			ReturnError(w, r, http.StatusUnauthorized, "Bearer authentication is needed!")
+			helper.ReturnError(w, r, http.StatusUnauthorized, "Bearer authentication is needed!")
 			return
 		}
 
@@ -231,7 +232,7 @@ func queryAuth(next http.Handler) http.Handler {
 
 		if token == "" {
 			logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token format from %s!", r.RemoteAddr))
-			ReturnError(w, r, http.StatusBadRequest, "Token of invalid format!")
+			helper.ReturnError(w, r, http.StatusBadRequest, "Token of invalid format!")
 			return
 		}
 
@@ -250,7 +251,7 @@ func checkToken(w http.ResponseWriter, r *http.Request, token string) bool {
 	if err != nil {
 		if errors.Is(err, jwt.ErrTokenExpired) {
 			logger.Debug(fmt.Sprintf("Attempt to authenticate with expired token from %s!", r.RemoteAddr))
-			ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
+			helper.ReturnError(w, r, http.StatusUnauthorized, "Token expired!")
 			return false
 		} else if errors.Is(err, jwt.ErrSignatureInvalid) {
 			logger.Warn(fmt.Sprintf("Attempt to authenticate with invalid signature from %s!", r.RemoteAddr))
@@ -258,7 +259,7 @@ func checkToken(w http.ResponseWriter, r *http.Request, token string) bool {
 			logger.Debug(fmt.Sprintf("Attempt to authenticate with invalid token from %s! Reason: %s", r.RemoteAddr, err))
 		}
 
-		ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
+		helper.ReturnError(w, r, http.StatusUnauthorized, "Invalid token!")
 		return false
 	}
 

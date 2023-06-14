@@ -43,10 +43,75 @@ func Execute() error {
 
 	logger.Debug("Loading context...")
 	context := ctx.GetContext()
-	context.RegisterModule(ctx.NewModule("main", func() {
-	}))
-	context.RegisterModule(ctx.NewModule("cpu", cpu.Tick))
-	context.RegisterModule(ctx.NewModule("memory", memory.Tick))
+	context.RegisterModule(
+		ctx.NewModule(
+			"main",
+			ctx.NewVersion(0, 0, 1),
+			[]ctx.Component{},
+			func() {},
+		),
+	)
+
+	context.RegisterModule(
+		ctx.NewModule(
+			"cpu",
+			ctx.NewVersion(0, 0, 1),
+			[]ctx.Component{
+				{
+					TabName: "CPU Information",
+					JSFile:  "static/internal/cpu/info.js",
+					Tag:     "cpu-info",
+				},
+				{
+					TabName: "CPU Clock History",
+					JSFile:  "static/internal/cpu/clock-history.js",
+					Tag:     "cpu-clock-history",
+				},
+				{
+					TabName: "CPU Usage",
+					JSFile:  "static/internal/cpu/usage.js",
+					Tag:     "cpu-usage",
+				},
+				{
+					TabName: "CPU Usage History",
+					JSFile:  "static/internal/cpu/usage-history.js",
+					Tag:     "cpu-usage-history",
+				},
+			},
+			cpu.Tick,
+		),
+	)
+
+	context.RegisterModule(
+		ctx.NewModule(
+			"memory",
+			ctx.NewVersion(0, 0, 1),
+			[]ctx.Component{
+				{
+					TabName: "RAM Usage",
+					JSFile:  "static/internal/memory/ram.js",
+					Tag:     "ram-usage",
+				},
+				{
+					TabName: "RAM Usage History",
+					JSFile:  "static/internal/memory/ram-history.js",
+					Tag:     "ram-usage-history",
+				},
+				{
+					TabName: "Swap Usage",
+					JSFile:  "static/internal/memory/swap.js",
+					Tag:     "swap-usage",
+				},
+				{
+					TabName: "Swap Usage History",
+					JSFile:  "static/internal/memory/swap-history.js",
+					Tag:     "swap-usage-history",
+				},
+			},
+			memory.Tick,
+		),
+	)
+
 	logger.Debug("Registering broker...")
 	context.RegisterBroker(pubsub.NewBroker())
 

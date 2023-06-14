@@ -1,8 +1,9 @@
 package http_server
 
 import (
-	"fmt"
+	"encoding/json"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/helper"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -12,7 +13,14 @@ import (
 )
 
 func TestInfo(t *testing.T) {
-	ctx.GetContext().RegisterModule(ctx.NewModule("TestModule", func() {}))
+	ctx.GetContext().RegisterModule(
+		ctx.NewModule(
+			"TestModule",
+			ctx.NewVersion(0, 0, 1),
+			[]ctx.Component{},
+			func() {},
+		),
+	)
 
 	req := httptest.NewRequest(http.MethodGet, "/info", nil)
 	w := httptest.NewRecorder()
@@ -34,7 +42,7 @@ func TestInfo(t *testing.T) {
 	}
 
 	assert.Equal(t, 200, res.StatusCode)
-	assert.JSONEq(t, `{"authentication": { "method": "PAM" }, "modules": [ { "name": "TestModule" } ] }`, string(body))
+	assert.JSONEq(t, `{"authentication": { "method": "PAM" }, "modules": [ { "name": "TestModule", "version":"0.0.1", "components": [] } ] }`, string(body))
 }
 
 func TestInfoMethodNotAllowed(t *testing.T) {
@@ -89,8 +97,19 @@ func TestInfoMethodNotAllowed(t *testing.T) {
 
 			assert.Equal(t, http.StatusMethodNotAllowed, res.StatusCode)
 			assert.Equal(t, "/info", httpError.Path)
-			assert.Equal(t, fmt.Sprintf("Method %s not allowed!", params.method), httpError.Message)
+			assert.Equal(t, "Only HTTP method GET is supported on /info.", httpError.Message)
 			assert.True(t, time.Since(httpError.Timestamp) < time.Since(time.Now().Add(-time.Second)) && time.Until(httpError.Timestamp) < 0)
 		})
 	}
+}
+
+func parseHTTPError(jsonInput []byte) helper.Error {
+	output := &helper.Error{}
+
+	err := json.Unmarshal(jsonInput, output)
+	if err != nil {
+		panic(err)
+	}
+
+	return *output
 }
