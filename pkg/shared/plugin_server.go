@@ -6,18 +6,22 @@ type ModuleRPCServer struct {
 	Impl ModuleProvider
 }
 
-func (s *ModuleRPCServer) GetName() string {
-	return s.Impl.GetName()
+func (s *ModuleRPCServer) GetName(_ []interface{}, response *string) error {
+	*response = s.Impl.GetName()
+	return nil
 }
 
-func (s *ModuleRPCServer) GetVersion() modules.Version {
-	return s.Impl.GetVersion()
+func (s *ModuleRPCServer) GetVersion(_ []interface{}, response *modules.Version) error {
+	*response = s.Impl.GetVersion()
+	return nil
 }
 
-func (s *ModuleRPCServer) TickFunction() []PluginMessage {
-	return s.Impl.TickFunction()
+func (s *ModuleRPCServer) TickFunction(_ []interface{}, response *[]PluginMessage) error {
+	*response = s.Impl.TickFunction()
+	return nil
 }
 
-func (s *ModuleRPCServer) GetComponents() []modules.Component {
-	return s.Impl.GetComponents()
+func (s *ModuleRPCServer) GetComponents(_ []interface{}, response *[]modules.Component) error {
+	*response = s.Impl.GetComponents()
+	return nil
 }
