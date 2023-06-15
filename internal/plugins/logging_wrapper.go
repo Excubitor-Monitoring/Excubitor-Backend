@@ -6,10 +6,13 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
 type LogWrapper struct {
-	logger logging.Logger
+	logger         logging.Logger
+	persistentArgs []interface{}
 }
 
 func (w *LogWrapper) Log(level hclog.Level, msg string, args ...interface{}) {
@@ -30,23 +33,23 @@ func (w *LogWrapper) Log(level hclog.Level, msg string, args ...interface{}) {
 }
 
 func (w *LogWrapper) Trace(msg string, args ...interface{}) {
-	w.logger.Trace(msg)
+	w.logger.Trace(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Debug(msg string, args ...interface{}) {
-	w.logger.Debug(msg)
+	w.logger.Debug(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Info(msg string, args ...interface{}) {
-	w.logger.Info(msg)
+	w.logger.Info(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Warn(msg string, args ...interface{}) {
-	w.logger.Warn(msg)
+	w.logger.Warn(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Error(msg string, args ...interface{}) {
-	w.logger.Debug(msg)
+	w.logger.Debug(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) IsTrace() bool {
@@ -70,15 +73,16 @@ func (w *LogWrapper) IsError() bool {
 }
 
 func (w *LogWrapper) ImpliedArgs() []interface{} {
-	return nil
+	return w.persistentArgs
 }
 
 func (w *LogWrapper) With(args ...interface{}) hclog.Logger {
+	w.persistentArgs = args
 	return w
 }
 
 func (w *LogWrapper) Name() string {
-	return "WrapperLogger"
+	return "PluginLogger"
 }
 
 func (w *LogWrapper) Named(name string) hclog.Logger {
@@ -94,9 +98,57 @@ func (w *LogWrapper) SetLevel(level hclog.Level) {
 }
 
 func (w *LogWrapper) StandardLogger(opts *hclog.StandardLoggerOptions) *log.Logger {
-	return log.New(os.Stdout, "StandardLogger", log.LstdFlags)
+	return log.New(os.Stdout, "StandardLogger", 0)
 }
 
 func (w *LogWrapper) StandardWriter(opts *hclog.StandardLoggerOptions) io.Writer {
 	return os.Stdout
+}
+
+func (w *LogWrapper) formatMessage(msg string, args []interface{}) string {
+	var output strings.Builder
+	output.WriteString(msg)
+
+	args = append(w.persistentArgs, args...)
+
+	if len(args) > 0 {
+		output.WriteString(" (")
+
+		for index, arg := range args {
+			if index%2 == 0 {
+				switch arg.(type) {
+				case string:
+					output.WriteString(arg.(string) + " = ")
+				default:
+					output.WriteString("Unkown type = ")
+				}
+			} else {
+				switch arg.(type) {
+				case string:
+					output.WriteString("\"" + arg.(string) + "\"")
+					if index != len(args)-1 {
+						output.WriteString(", ")
+					}
+				case []string:
+					output.WriteString("[")
+
+					for contentIndex, content := range arg.([]string) {
+						output.WriteString(content)
+
+						if contentIndex != len(arg.([]string))-1 {
+							output.WriteString(", ")
+						}
+					}
+
+					output.WriteString("]")
+				case int:
+					output.WriteString(strconv.Itoa(arg.(int)))
+				}
+			}
+		}
+
+		output.WriteString(")")
+	}
+
+	return output.String()
 }

@@ -33,15 +33,15 @@ func LoadPlugins() error {
 
 	for _, pluginEntry := range pluginFolder {
 		if pluginEntry.IsDir() {
-			items, err := os.ReadDir(pluginEntry.Name())
+			items, err := os.ReadDir("plugins/" + pluginEntry.Name())
 			if err != nil {
-				logger.Error(fmt.Sprintf("Error on loading plugin %s. Skipping...", pluginEntry.Name()))
+				logger.Error(fmt.Sprintf("Error on loading plugin %s. Skipping... Reason: %s", pluginEntry.Name(), err))
 				continue
 			}
 
 			for _, item := range items {
 				if strings.HasSuffix(item.Name(), ".plugin") {
-					loadablePlugins = append(loadablePlugins, item.Name())
+					loadablePlugins = append(loadablePlugins, "plugins/"+pluginEntry.Name()+"/"+item.Name())
 					logger.Debug(fmt.Sprintf("Added plugin %s to loadable plugins.", item.Name()))
 				}
 			}
@@ -61,7 +61,7 @@ func InitPlugins() error {
 				"module": &shared.ModulePlugin{},
 			},
 			Cmd:    exec.Command("./" + pl),
-			Logger: &LogWrapper{logger: logger},
+			Logger: (&LogWrapper{logger: logger}).With("plugin", strings.Split(pl, "/")[1]),
 		})
 
 		rpcClient, err := client.Client()

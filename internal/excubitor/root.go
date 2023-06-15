@@ -114,15 +114,15 @@ func Execute() error {
 		),
 	)
 
+	logger.Debug("Registering broker...")
+	context.RegisterBroker(pubsub.NewBroker())
+
 	if err := plugins.LoadPlugins(); err != nil {
 		return err
 	}
 	if err := plugins.InitPlugins(); err != nil {
 		return err
 	}
-
-	logger.Debug("Registering broker...")
-	context.RegisterBroker(pubsub.NewBroker())
 
 	logger.Debug("Starting HTTP Server!")
 

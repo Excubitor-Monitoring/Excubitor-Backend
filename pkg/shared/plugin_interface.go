@@ -21,6 +21,6 @@ func (p *ModulePlugin) Server(*plugin.MuxBroker) (interface{}, error) {
 	return &ModuleRPCServer{Impl: p.Impl}, nil
 }
 
-func (p *ModulePlugin) Client(b *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
+func (*ModulePlugin) Client(_ *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
 	return &ModuleRPC{c}, nil
 }
