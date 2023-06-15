@@ -1,6 +1,7 @@
 package shared
 
 import (
+	"embed"
 	"fmt"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared/modules"
@@ -35,6 +36,16 @@ func (rpc *ModuleRPC) GetComponents() []modules.Component {
 	var response []modules.Component
 	if err := rpc.client.Call("Plugin.GetComponents", new(interface{}), &response); err != nil {
 		logging.GetLogger().Error(fmt.Sprintf("Error when calling 'Plugin.GetComponents' over RPC: %s", err))
+		panic(err)
+	}
+
+	return response
+}
+
+func (rpc *ModuleRPC) GetComponentFiles() embed.FS {
+	var response embed.FS
+	if err := rpc.client.Call("Plugin.GetComponentFiles", new(interface{}), &response); err != nil {
+		logging.GetLogger().Error(fmt.Sprintf("Error when calling 'Plugin.GetComponentFiles' over RPC: %s", err))
 		panic(err)
 	}
 
