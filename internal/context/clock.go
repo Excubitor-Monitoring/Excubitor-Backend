@@ -21,7 +21,7 @@ func startClock() {
 			for {
 				modules := GetContext().GetModules()
 				for _, module := range modules {
-					module.tickFunction()
+					module.TickFunction()
 				}
 				time.Sleep(clock)
 			}
