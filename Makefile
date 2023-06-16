@@ -21,12 +21,20 @@ components:
 	@echo "Building frontend components"
 	@echo "Building CPU-Info component"
 	make COMPDIR=components/CPU-Info MODNAME=cpu FILENAME=info.js build-component
+	@echo "Building CPU-Clock-History component"
+	make COMPDIR=components/CPU-Clock-History MODNAME=cpu FILENAME=clock-history.js build-component
 	@echo "Building CPU-Usage component"
 	make COMPDIR=components/CPU-Usage MODNAME=cpu FILENAME=usage.js build-component
+	@echo "Building CPU-Usage-History component"
+	make COMPDIR=components/CPU-Usage-History MODNAME=cpu FILENAME=usage-history.js build-component
 	@echo "Building RAM-Usage component"
 	make COMPDIR=components/RAM-Usage MODNAME=memory FILENAME=ram.js build-component
+	@echo "Building RAM-Usage-History component"
+	make COMPDIR=components/RAM-Usage-History MODNAME=memory FILENAME=ram-history.js build-component
 	@echo "Building Swap-Usage component"
 	make COMPDIR=components/Swap-Usage MODNAME=memory FILENAME=swap.js build-component
+	@echo "Building Swap-Usage-History component"
+	make COMPDIR=components/Swap-Usage-History MODNAME=memory FILENAME=swap-history.js build-component
 build-component:
 	$(NPM) --cwd $(COMPDIR) $(NPMI)
 	$(NPM) --cwd $(COMPDIR) $(NPMBUILD)
@@ -41,15 +49,23 @@ clean:
 	rm -rf bin/excubitor-backend
 	@echo "Removing built javascript files"
 	rm -rf components/CPU-Info/dist
+	rm -rf components/CPU-Clock-Hisotry/dist
 	rm -rf components/CPU-Usage/dist
+	rm -rf components/CPU-Usage-History/dist
 	rm -rf components/RAM-Usage/dist
+	rm -rf components/RAM-Usage-History/dist
 	rm -rf components/Swap-Usage/dist
+	rm -rf components/Swap-Usage-History/dist
 	rm -rf internal/frontend/static/internal/*
 	@echo "Removing javascript dependencies"
 	rm -rf components/CPU-Info/node_modules
+	rm -rf components/CPU-Clock-History/node_modules
 	rm -rf components/CPU-Usage/node_modules
+	rm -rf components/CPU-Usage-History/node_modules
 	rm -rf components/RAM-Usage/node_modules
+	rm -rf components/RAM-Usage-History/node_modules
 	rm -rf components/Swap-Usage/node_modules
+	rm -rf components/Swap-Usage-History/node_modules
 	@echo "Removing packaging files"
 	rm -rf package/deb/excubitor_*
 	@echo "Removing coverage reports"
