@@ -1,7 +1,6 @@
 package shared
 
 import (
-	"embed"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared/modules"
 )
 
@@ -26,10 +25,5 @@ func (s *ModuleRPCServer) TickFunction(_ interface{}, response *[]PluginMessage)
 
 func (s *ModuleRPCServer) GetComponents(_ interface{}, response *[]modules.Component) error {
 	*response = s.Impl.GetComponents()
-	return nil
-}
-
-func (s *ModuleRPCServer) GetComponentFiles(_ interface{}, response *embed.FS) error {
-	*response = s.Impl.GetComponentFiles()
 	return nil
 }
