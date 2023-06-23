@@ -41,6 +41,16 @@ func (rpc *ModuleRPC) GetComponents() []modules.Component {
 	return response
 }
 
+func (rpc *ModuleRPC) GetComponentFile(path string) []byte {
+	var response []byte
+	if err := rpc.client.Call("Plugin.GetComponentFile", path, &response); err != nil {
+		logging.GetLogger().Error(fmt.Sprintf("Error when calling 'Plugin.GetComponentFile' over RPC: %s", err))
+		panic(err)
+	}
+
+	return response
+}
+
 func (rpc *ModuleRPC) TickFunction() []PluginMessage {
 	var response []PluginMessage
 	if err := rpc.client.Call("Plugin.TickFunction", new(interface{}), &response); err != nil {

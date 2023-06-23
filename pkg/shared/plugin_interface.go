@@ -11,6 +11,7 @@ type ModuleProvider interface {
 	GetVersion() modules.Version
 	TickFunction() []PluginMessage
 	GetComponents() []modules.Component
+	GetComponentFile(path string) []byte
 }
 
 type ModulePlugin struct {
