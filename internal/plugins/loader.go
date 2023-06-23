@@ -76,21 +76,30 @@ func InitPlugins() error {
 
 		loadedPlugin := rawPlugin.(shared.ModuleProvider)
 
-		ctx.GetContext().RegisterModule(
-			modules.NewModule(
-				loadedPlugin.GetName(),
-				loadedPlugin.GetVersion(),
-				loadedPlugin.GetComponents(),
-				func() {
-					messages := loadedPlugin.TickFunction()
-					for _, msg := range messages {
-						ctx.GetContext().GetBroker().Publish(msg.Monitor, msg.Body)
-					}
-				},
-			),
+		module := modules.NewModule(
+			loadedPlugin.GetName(),
+			loadedPlugin.GetVersion(),
+			nil,
+			func() {
+				messages := loadedPlugin.TickFunction()
+				for _, msg := range messages {
+					ctx.GetContext().GetBroker().Publish(msg.Monitor, msg.Body)
+				}
+			},
 		)
 
-		logger.Info("Contents of file: ", string(loadedPlugin.GetComponentFile("test.js")))
+		for _, component := range loadedPlugin.GetComponents() {
+			module.Components = append(module.Components,
+				modules.Component{
+					TabName: component.TabName,
+					JSFile:  "static/external/" + loadedPlugin.GetName() + "/" + component.JSFile,
+					Tag:     component.Tag,
+				})
+		}
+
+		frontendGetters[module.Name] = loadedPlugin.GetComponentFile
+
+		ctx.GetContext().RegisterModule(module)
 	}
 
 	return nil

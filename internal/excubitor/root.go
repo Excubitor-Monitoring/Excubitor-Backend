@@ -56,7 +56,7 @@ func Execute() error {
 
 	context.RegisterModule(
 		modules.NewModule(
-			"cpu",
+			"CPU",
 			modules.NewVersion(0, 0, 1),
 			[]modules.Component{
 				{
@@ -86,7 +86,7 @@ func Execute() error {
 
 	context.RegisterModule(
 		modules.NewModule(
-			"memory",
+			"Memory",
 			modules.NewVersion(0, 0, 1),
 			[]modules.Component{
 				{
