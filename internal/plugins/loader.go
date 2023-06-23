@@ -89,6 +89,8 @@ func InitPlugins() error {
 				},
 			),
 		)
+
+		logger.Info("Contents of file: ", string(loadedPlugin.GetComponentFile(shared.PathArgs{Path: "test.js"})))
 	}
 
 	return nil

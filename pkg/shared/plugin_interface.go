@@ -11,7 +11,7 @@ type ModuleProvider interface {
 	GetVersion() modules.Version
 	TickFunction() []PluginMessage
 	GetComponents() []modules.Component
-	GetComponentFile(path string) []byte
+	GetComponentFile(args PathArgs) []byte
 }
 
 type ModulePlugin struct {
@@ -24,4 +24,8 @@ func (p *ModulePlugin) Server(*plugin.MuxBroker) (interface{}, error) {
 
 func (*ModulePlugin) Client(_ *plugin.MuxBroker, c *rpc.Client) (interface{}, error) {
 	return &ModuleRPC{c}, nil
+}
+
+type PathArgs struct {
+	Path string
 }

@@ -29,6 +29,6 @@ func (s *ModuleRPCServer) GetComponents(_ interface{}, response *[]modules.Compo
 }
 
 func (s *ModuleRPCServer) GetComponentFile(args interface{}, response *[]byte) error {
-	*response = s.Impl.GetComponentFile(args.(string))
+	*response = s.Impl.GetComponentFile(args.(PathArgs))
 	return nil
 }
