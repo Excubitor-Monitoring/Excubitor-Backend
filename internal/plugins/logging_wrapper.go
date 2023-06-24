@@ -148,11 +148,11 @@ func (w *LogWrapper) SetLevel(level hclog.Level) {
 	w.level = level
 }
 
-func (w *LogWrapper) StandardLogger(opts *hclog.StandardLoggerOptions) *log.Logger {
+func (w *LogWrapper) StandardLogger(_ *hclog.StandardLoggerOptions) *log.Logger {
 	return log.New(os.Stdout, "StandardLogger", 0)
 }
 
-func (w *LogWrapper) StandardWriter(opts *hclog.StandardLoggerOptions) io.Writer {
+func (w *LogWrapper) StandardWriter(_ *hclog.StandardLoggerOptions) io.Writer {
 	return os.Stdout
 }
 
