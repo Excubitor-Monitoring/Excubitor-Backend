@@ -4,6 +4,8 @@ import (
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared/modules"
 )
 
+// ModuleRPCServer is the server of the plugin connection.
+// Its methods are run on the plugin side and called through ModuleRPC in the main program.
 type ModuleRPCServer struct {
 	Impl ModuleProvider
 }

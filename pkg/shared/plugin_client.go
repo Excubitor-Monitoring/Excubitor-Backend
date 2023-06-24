@@ -7,6 +7,8 @@ import (
 	"net/rpc"
 )
 
+// ModuleRPC is the client of the plugin connection.
+// Its methods are run in the main program to call the respective methods on the plugin side.
 type ModuleRPC struct {
 	client *rpc.Client
 }
