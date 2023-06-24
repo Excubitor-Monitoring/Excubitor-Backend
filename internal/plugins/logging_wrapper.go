@@ -6,27 +6,29 @@ import (
 	"io"
 	"log"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 )
 
 type LogWrapper struct {
 	logger         logging.Logger
+	name           string
 	persistentArgs []interface{}
 }
 
 func (w *LogWrapper) Log(level hclog.Level, msg string, args ...interface{}) {
 	switch level {
 	case hclog.Error:
-		w.Error(msg, args)
+		w.Error(msg, args...)
 	case hclog.Warn:
-		w.Warn(msg, args)
+		w.Warn(msg, args...)
 	case hclog.Info:
-		w.Info(msg, args)
+		w.Info(msg, args...)
 	case hclog.Debug:
-		w.Debug(msg, args)
+		w.Debug(msg, args...)
 	case hclog.Trace:
-		w.Trace(msg, args)
+		w.Trace(msg, args...)
 	default:
 		w.Info("[UNKNOWN LOG LEVEL] "+msg, args)
 	}
@@ -49,7 +51,7 @@ func (w *LogWrapper) Warn(msg string, args ...interface{}) {
 }
 
 func (w *LogWrapper) Error(msg string, args ...interface{}) {
-	w.logger.Debug(w.formatMessage(msg, args))
+	w.logger.Error(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) IsTrace() bool {
@@ -77,20 +79,23 @@ func (w *LogWrapper) ImpliedArgs() []interface{} {
 }
 
 func (w *LogWrapper) With(args ...interface{}) hclog.Logger {
-	w.persistentArgs = args
-	return w
+	return &LogWrapper{logger: w.logger, name: w.name, persistentArgs: args}
 }
 
 func (w *LogWrapper) Name() string {
-	return "PluginLogger"
+	return w.name
 }
 
 func (w *LogWrapper) Named(name string) hclog.Logger {
-	return w
+	if w.name == "" {
+		return w.ResetNamed(name)
+	} else {
+		return &LogWrapper{logger: w.logger, name: w.name + " > " + name, persistentArgs: w.persistentArgs}
+	}
 }
 
 func (w *LogWrapper) ResetNamed(name string) hclog.Logger {
-	return w
+	return &LogWrapper{logger: w.logger, name: name, persistentArgs: w.persistentArgs}
 }
 
 func (w *LogWrapper) SetLevel(level hclog.Level) {
@@ -107,20 +112,40 @@ func (w *LogWrapper) StandardWriter(opts *hclog.StandardLoggerOptions) io.Writer
 
 func (w *LogWrapper) formatMessage(msg string, args []interface{}) string {
 	var output strings.Builder
+
+	if w.name != "" {
+		output.WriteString("[ " + w.name + " ] - ")
+	}
+
 	output.WriteString(msg)
 
 	args = append(w.persistentArgs, args...)
 
-	if len(args) > 0 {
-		output.WriteString(" (")
+	if len(args) == 1 && reflect.TypeOf(args[0]).String() != "string" {
+		return msg
+	}
 
+	opened := false
+	skip := false
+
+	if len(args) > 0 {
 		for index, arg := range args {
+			if skip {
+				skip = false
+				continue
+			}
+
 			if index%2 == 0 {
 				switch arg.(type) {
 				case string:
+					if !opened {
+						output.WriteString(" (")
+						opened = true
+					}
 					output.WriteString(arg.(string) + " = ")
 				default:
-					output.WriteString("Unkown type = ")
+					skip = true
+					continue
 				}
 			} else {
 				switch arg.(type) {
@@ -133,7 +158,7 @@ func (w *LogWrapper) formatMessage(msg string, args []interface{}) string {
 					output.WriteString("[")
 
 					for contentIndex, content := range arg.([]string) {
-						output.WriteString(content)
+						output.WriteString("\"" + content + "\"")
 
 						if contentIndex != len(arg.([]string))-1 {
 							output.WriteString(", ")
@@ -144,10 +169,12 @@ func (w *LogWrapper) formatMessage(msg string, args []interface{}) string {
 				case int:
 					output.WriteString(strconv.Itoa(arg.(int)))
 				}
+
+				if index == len(args)-1 {
+					output.WriteString(")")
+				}
 			}
 		}
-
-		output.WriteString(")")
 	}
 
 	return output.String()

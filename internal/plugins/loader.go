@@ -61,7 +61,7 @@ func InitPlugins() error {
 				"module": &shared.ModulePlugin{},
 			},
 			Cmd:    exec.Command("./" + pl),
-			Logger: (&LogWrapper{logger: logger}).With("plugin", strings.Split(pl, "/")[1]),
+			Logger: (&LogWrapper{logger: logger}).ResetNamed(strings.Split(pl, "/")[1]),
 		})
 
 		rpcClient, err := client.Client()
