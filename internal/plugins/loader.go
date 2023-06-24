@@ -2,6 +2,7 @@ package plugins
 
 import (
 	"fmt"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/config"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared"
@@ -60,8 +61,12 @@ func InitPlugins() error {
 			Plugins: map[string]plugin.Plugin{
 				"module": &shared.ModulePlugin{},
 			},
-			Cmd:    exec.Command("./" + pl),
-			Logger: (&LogWrapper{logger: logger}).ResetNamed(strings.Split(pl, "/")[1]),
+			Cmd: exec.Command("./" + pl),
+			Logger: NewLogWrapper(
+				logger,
+				strings.Split(pl, "/")[1],
+				logging.GetLogLevelByString(config.GetConfig().String("logging.log_level")),
+			),
 		})
 
 		rpcClient, err := client.Client()

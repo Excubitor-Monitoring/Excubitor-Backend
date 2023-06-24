@@ -9,7 +9,7 @@ import (
 
 func TestLogWrapper_Arguments(t *testing.T) {
 	mock := &MockLogger{}
-	logWrapper := &LogWrapper{logger: mock}
+	logWrapper := &LogWrapper{logger: mock, level: hclog.Trace}
 
 	// Without arguments
 
@@ -56,7 +56,7 @@ func TestLogWrapper_Arguments(t *testing.T) {
 
 func TestLogWrapper_Levels(t *testing.T) {
 	mock := &MockLogger{}
-	logWrapper := &LogWrapper{logger: mock}
+	logWrapper := &LogWrapper{logger: mock, level: hclog.Trace}
 
 	// Trace
 	logWrapper.Trace("Trace")
@@ -89,9 +89,107 @@ func TestLogWrapper_Levels(t *testing.T) {
 	mock.AssertLogged(t, logging.Error, "Error")
 }
 
+func TestLogWrapper_ChangeLevels(t *testing.T) {
+	mock := &MockLogger{}
+	logWrapper := &LogWrapper{logger: mock, level: hclog.Trace}
+
+	assert.True(t, logWrapper.IsTrace())
+	assert.True(t, logWrapper.IsDebug())
+	assert.True(t, logWrapper.IsInfo())
+	assert.True(t, logWrapper.IsWarn())
+	assert.True(t, logWrapper.IsError())
+
+	logWrapper.Error("Error")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Warn("Warn")
+	mock.AssertLogged(t, logging.Warn, "Warn")
+	logWrapper.Info("Info")
+	mock.AssertLogged(t, logging.Info, "Info")
+	logWrapper.Debug("Debug")
+	mock.AssertLogged(t, logging.Debug, "Debug")
+	logWrapper.Trace("Trace")
+	mock.AssertLogged(t, logging.Trace, "Trace")
+
+	logWrapper.SetLevel(hclog.Debug)
+
+	assert.False(t, logWrapper.IsTrace())
+	assert.True(t, logWrapper.IsDebug())
+	assert.True(t, logWrapper.IsInfo())
+	assert.True(t, logWrapper.IsWarn())
+	assert.True(t, logWrapper.IsError())
+
+	logWrapper.Error("Error")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Warn("Warn")
+	mock.AssertLogged(t, logging.Warn, "Warn")
+	logWrapper.Info("Info")
+	mock.AssertLogged(t, logging.Info, "Info")
+	logWrapper.Debug("Debug")
+	mock.AssertLogged(t, logging.Debug, "Debug")
+	logWrapper.Trace("Trace")
+	mock.AssertLogged(t, logging.Debug, "Debug")
+
+	logWrapper.SetLevel(hclog.Info)
+
+	assert.False(t, logWrapper.IsTrace())
+	assert.False(t, logWrapper.IsDebug())
+	assert.True(t, logWrapper.IsInfo())
+	assert.True(t, logWrapper.IsWarn())
+	assert.True(t, logWrapper.IsError())
+
+	logWrapper.Error("Error")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Warn("Warn")
+	mock.AssertLogged(t, logging.Warn, "Warn")
+	logWrapper.Info("Info")
+	mock.AssertLogged(t, logging.Info, "Info")
+	logWrapper.Debug("Debug")
+	mock.AssertLogged(t, logging.Info, "Info")
+	logWrapper.Trace("Trace")
+	mock.AssertLogged(t, logging.Info, "Info")
+
+	logWrapper.SetLevel(hclog.Warn)
+
+	assert.False(t, logWrapper.IsTrace())
+	assert.False(t, logWrapper.IsDebug())
+	assert.False(t, logWrapper.IsInfo())
+	assert.True(t, logWrapper.IsWarn())
+	assert.True(t, logWrapper.IsError())
+
+	logWrapper.Error("Error")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Warn("Warn")
+	mock.AssertLogged(t, logging.Warn, "Warn")
+	logWrapper.Info("Info")
+	mock.AssertLogged(t, logging.Warn, "Warn")
+	logWrapper.Debug("Debug")
+	mock.AssertLogged(t, logging.Warn, "Warn")
+	logWrapper.Trace("Trace")
+	mock.AssertLogged(t, logging.Warn, "Warn")
+
+	logWrapper.SetLevel(hclog.Error)
+
+	assert.False(t, logWrapper.IsTrace())
+	assert.False(t, logWrapper.IsDebug())
+	assert.False(t, logWrapper.IsInfo())
+	assert.False(t, logWrapper.IsWarn())
+	assert.True(t, logWrapper.IsError())
+
+	logWrapper.Error("Error")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Warn("Warn")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Info("Info")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Debug("Debug")
+	mock.AssertLogged(t, logging.Error, "Error")
+	logWrapper.Trace("Trace")
+	mock.AssertLogged(t, logging.Error, "Error")
+}
+
 func TestLogWrapper_Name(t *testing.T) {
 	mock := &MockLogger{}
-	logWrapper := &LogWrapper{logger: mock}
+	logWrapper := &LogWrapper{logger: mock, level: hclog.Trace}
 
 	logWrapper.Named("TestName").Log(hclog.Info, "Message with name")
 	mock.AssertLogged(t, logging.Info, "[ TestName ] - Message with name")

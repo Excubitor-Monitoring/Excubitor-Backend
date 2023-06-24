@@ -15,6 +15,32 @@ type LogWrapper struct {
 	logger         logging.Logger
 	name           string
 	persistentArgs []interface{}
+	level          hclog.Level
+}
+
+func NewLogWrapper(logger logging.Logger, name string, level logging.LogLevel) *LogWrapper {
+	var hclogLevel hclog.Level
+
+	switch level {
+	case logging.Trace:
+		hclogLevel = hclog.Trace
+	case logging.Debug:
+		hclogLevel = hclog.Debug
+	case logging.Info:
+		hclogLevel = hclog.Info
+	case logging.Warn:
+		hclogLevel = hclog.Warn
+	case logging.Error:
+		hclogLevel = hclog.Error
+	case logging.Fatal:
+		hclogLevel = hclog.Error
+	}
+
+	return &LogWrapper{
+		logger: logger,
+		name:   name,
+		level:  hclogLevel,
+	}
 }
 
 func (w *LogWrapper) Log(level hclog.Level, msg string, args ...interface{}) {
@@ -35,43 +61,63 @@ func (w *LogWrapper) Log(level hclog.Level, msg string, args ...interface{}) {
 }
 
 func (w *LogWrapper) Trace(msg string, args ...interface{}) {
+	if w.level > hclog.Trace {
+		return
+	}
+
 	w.logger.Trace(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Debug(msg string, args ...interface{}) {
+	if w.level > hclog.Debug {
+		return
+	}
+
 	w.logger.Debug(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Info(msg string, args ...interface{}) {
+	if w.level > hclog.Info {
+		return
+	}
+
 	w.logger.Info(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Warn(msg string, args ...interface{}) {
+	if w.level > hclog.Warn {
+		return
+	}
+
 	w.logger.Warn(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) Error(msg string, args ...interface{}) {
+	if w.level > hclog.Error {
+		return
+	}
+
 	w.logger.Error(w.formatMessage(msg, args))
 }
 
 func (w *LogWrapper) IsTrace() bool {
-	return true
+	return w.level <= hclog.Trace
 }
 
 func (w *LogWrapper) IsDebug() bool {
-	return true
+	return w.level <= hclog.Debug
 }
 
 func (w *LogWrapper) IsInfo() bool {
-	return true
+	return w.level <= hclog.Info
 }
 
 func (w *LogWrapper) IsWarn() bool {
-	return true
+	return w.level <= hclog.Warn
 }
 
 func (w *LogWrapper) IsError() bool {
-	return true
+	return w.level <= hclog.Error
 }
 
 func (w *LogWrapper) ImpliedArgs() []interface{} {
@@ -99,7 +145,7 @@ func (w *LogWrapper) ResetNamed(name string) hclog.Logger {
 }
 
 func (w *LogWrapper) SetLevel(level hclog.Level) {
-	return
+	w.level = level
 }
 
 func (w *LogWrapper) StandardLogger(opts *hclog.StandardLoggerOptions) *log.Logger {
