@@ -7,43 +7,6 @@ import (
 	"testing"
 )
 
-type MockLogger struct {
-	logs []loggedMessage
-}
-
-type loggedMessage struct {
-	level   logging.LogLevel
-	message []any
-}
-
-func (m *MockLogger) Trace(v ...any) {
-	m.logs = append(m.logs, loggedMessage{level: logging.Trace, message: v})
-}
-
-func (m *MockLogger) Debug(v ...any) {
-	m.logs = append(m.logs, loggedMessage{level: logging.Debug, message: v})
-}
-
-func (m *MockLogger) Info(v ...any) {
-	m.logs = append(m.logs, loggedMessage{level: logging.Info, message: v})
-}
-
-func (m *MockLogger) Warn(v ...any) {
-	m.logs = append(m.logs, loggedMessage{level: logging.Warn, message: v})
-}
-
-func (m *MockLogger) Error(v ...any) {
-	m.logs = append(m.logs, loggedMessage{level: logging.Error, message: v})
-}
-
-func (m *MockLogger) Fatal(v ...any) {
-	m.logs = append(m.logs, loggedMessage{level: logging.Fatal, message: v})
-}
-
-func (m *MockLogger) AssertLogged(t *testing.T, level logging.LogLevel, message ...any) {
-	assert.Equal(t, m.logs[len(m.logs)-1], loggedMessage{level, message})
-}
-
 func TestLogWrapper_Arguments(t *testing.T) {
 	mock := &MockLogger{}
 	logWrapper := &LogWrapper{logger: mock}
@@ -154,4 +117,43 @@ func TestLogWrapper_ImpliedArgs(t *testing.T) {
 	for i, arg := range args {
 		assert.Equal(t, arg, argumentLogWrapper.ImpliedArgs()[i])
 	}
+}
+
+// MOCK
+
+type MockLogger struct {
+	logs []loggedMessage
+}
+
+type loggedMessage struct {
+	level   logging.LogLevel
+	message []any
+}
+
+func (m *MockLogger) Trace(v ...any) {
+	m.logs = append(m.logs, loggedMessage{level: logging.Trace, message: v})
+}
+
+func (m *MockLogger) Debug(v ...any) {
+	m.logs = append(m.logs, loggedMessage{level: logging.Debug, message: v})
+}
+
+func (m *MockLogger) Info(v ...any) {
+	m.logs = append(m.logs, loggedMessage{level: logging.Info, message: v})
+}
+
+func (m *MockLogger) Warn(v ...any) {
+	m.logs = append(m.logs, loggedMessage{level: logging.Warn, message: v})
+}
+
+func (m *MockLogger) Error(v ...any) {
+	m.logs = append(m.logs, loggedMessage{level: logging.Error, message: v})
+}
+
+func (m *MockLogger) Fatal(v ...any) {
+	m.logs = append(m.logs, loggedMessage{level: logging.Fatal, message: v})
+}
+
+func (m *MockLogger) AssertLogged(t *testing.T, level logging.LogLevel, message ...any) {
+	assert.Equal(t, m.logs[len(m.logs)-1], loggedMessage{level, message})
 }
