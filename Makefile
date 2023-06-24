@@ -1,4 +1,4 @@
-.PHONY: install-deps build run test test/coverage install package/deb components build-component
+.PHONY: install-deps build run test test/coverage install package/deb components build-component rebuild
 
 GO=go
 GOTEST=$(GO) test
@@ -20,20 +20,36 @@ components:
 	git submodule init
 	@echo "Building frontend components"
 	@echo "Building CPU-Info component"
-	make COMPDIR=components/CPU-Info MODNAME=cpu FILENAME=info.js build-component
+	make components/CPU-Info/dist
 	@echo "Building CPU-Clock-History component"
-	make COMPDIR=components/CPU-Clock-History MODNAME=cpu FILENAME=clock-history.js build-component
+	make components/CPU-Clock-History/dist
 	@echo "Building CPU-Usage component"
-	make COMPDIR=components/CPU-Usage MODNAME=cpu FILENAME=usage.js build-component
+	make components/CPU-Usage/dist
 	@echo "Building CPU-Usage-History component"
-	make COMPDIR=components/CPU-Usage-History MODNAME=cpu FILENAME=usage-history.js build-component
+	make components/CPU-Usage-History/dist
 	@echo "Building RAM-Usage component"
-	make COMPDIR=components/RAM-Usage MODNAME=memory FILENAME=ram.js build-component
+	make components/RAM-Usage/dist
 	@echo "Building RAM-Usage-History component"
-	make COMPDIR=components/RAM-Usage-History MODNAME=memory FILENAME=ram-history.js build-component
+	make components/RAM-Usage-History/dist
 	@echo "Building Swap-Usage component"
-	make COMPDIR=components/Swap-Usage MODNAME=memory FILENAME=swap.js build-component
+	make components/Swap-Usage/dist
 	@echo "Building Swap-Usage-History component"
+	make components/Swap-Usage-History/dist
+components/CPU-Info/dist:
+	make COMPDIR=components/CPU-Info MODNAME=cpu FILENAME=info.js build-component
+components/CPU-Clock-History/dist:
+	make COMPDIR=components/CPU-Clock-History MODNAME=cpu FILENAME=clock-history.js build-component
+components/CPU-Usage/dist:
+	make COMPDIR=components/CPU-Usage MODNAME=cpu FILENAME=usage.js build-component
+components/CPU-Usage-History/dist:
+	make COMPDIR=components/CPU-Usage-History MODNAME=cpu FILENAME=usage-history.js build-component
+components/RAM-Usage/dist:
+	make COMPDIR=components/RAM-Usage MODNAME=memory FILENAME=ram.js build-component
+components/RAM-Usage-History/dist:
+	make COMPDIR=components/RAM-Usage-History MODNAME=memory FILENAME=ram-history.js build-component
+components/Swap-Usage/dist:
+	make COMPDIR=components/Swap-Usage MODNAME=memory FILENAME=swap.js build-component
+components/Swap-Usage-History/dist:
 	make COMPDIR=components/Swap-Usage-History MODNAME=memory FILENAME=swap-history.js build-component
 build-component:
 	$(NPM) --cwd $(COMPDIR) $(NPMI)
@@ -44,6 +60,9 @@ build:
 	make components
 	@echo "Compiling project for current platform"
 	$(GOBUILD) -o bin/excubitor-backend ./cmd/main.go
+rebuild:
+	make clean
+	make build
 clean:
 	@echo "Removing binary packages"
 	rm -rf bin/excubitor-backend
