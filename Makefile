@@ -116,6 +116,7 @@ package/deb:
 	# Copying control file and adding version
 	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN
 	cp package/deb/control package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
+	cp package/deb/conffiles package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/conffiles
 	@echo "Version: $(EXCUBITOR_VERSION)" >> package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
 	# Assemble package
 	dpkg-deb --build --root-owner-group package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64
