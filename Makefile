@@ -70,24 +70,10 @@ clean:
 	@echo "Removing binary packages"
 	rm -rf bin/excubitor-backend
 	@echo "Removing built javascript files"
-	rm -rf components/CPU-Info/dist
-	rm -rf components/CPU-Clock-Hisotry/dist
-	rm -rf components/CPU-Usage/dist
-	rm -rf components/CPU-Usage-History/dist
-	rm -rf components/RAM-Usage/dist
-	rm -rf components/RAM-Usage-History/dist
-	rm -rf components/Swap-Usage/dist
-	rm -rf components/Swap-Usage-History/dist
+	rm -rf components/*/dist
 	rm -rf internal/frontend/static/internal/*
 	@echo "Removing javascript dependencies"
-	rm -rf components/CPU-Info/node_modules
-	rm -rf components/CPU-Clock-History/node_modules
-	rm -rf components/CPU-Usage/node_modules
-	rm -rf components/CPU-Usage-History/node_modules
-	rm -rf components/RAM-Usage/node_modules
-	rm -rf components/RAM-Usage-History/node_modules
-	rm -rf components/Swap-Usage/node_modules
-	rm -rf components/Swap-Usage-History/node_modules
+	rm -rf components/*/node_modules
 	@echo "Removing packaging files"
 	rm -rf package/deb/excubitor_*
 	@echo "Removing coverage reports"
