@@ -4,7 +4,7 @@ GO=go
 GOTEST=$(GO) test
 GOCOVER=$(GO) tool cover
 GOMOD=$(GO) mod
-GOBUILD=$(GO) build
+GOBUILD=$(GO) build -ldflags="-s -w"
 GORUN=$(GO) run
 
 NPM=yarn
