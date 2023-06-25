@@ -11,6 +11,8 @@ NPM=yarn
 NPMI=install
 NPMBUILD=run build
 
+UPX=upx
+
 EXCUBITOR_VERSION=0.0.1-alpha
 
 install-deps:
@@ -60,6 +62,7 @@ build:
 	make components
 	@echo "Compiling project for current platform"
 	$(GOBUILD) -o bin/excubitor-backend ./cmd/main.go
+	@if [ "$(USE_UPX)" = "true" ]; then echo "Using UPX to compress the binary..."; $(UPX) bin/excubitor-backend; fi
 rebuild:
 	make clean
 	make build
