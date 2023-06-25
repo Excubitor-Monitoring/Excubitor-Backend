@@ -104,13 +104,13 @@ install:
 	make build
 	# Install Configuration file
 	mkdir -p $(DESTDIR)/etc/excubitor
-	install -m 0655 config.sample.yml $(DESTDIR)/etc/excubitor/config.yml
+	install -m 0644 config.sample.yml $(DESTDIR)/etc/excubitor/config.yml
 	# Install binary
 	mkdir -p $(DESTDIR)/opt/excubitor/bin
 	install -m 0755 bin/excubitor-backend $(DESTDIR)/opt/excubitor/bin/excubitor-backend
 	# Install systemd unit file
 	mkdir -p $(DESTDIR)/lib/systemd/system
-	install -m 0655 package/systemd/excubitor.service $(DESTDIR)/lib/systemd/system/excubitor.service
+	install -m 0644 package/systemd/excubitor.service $(DESTDIR)/lib/systemd/system/excubitor.service
 package/deb:
 	make DESTDIR=package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64 install
 	# Copying control file and adding version
