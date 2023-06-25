@@ -110,9 +110,9 @@ install:
 	install -m 0755 bin/excubitor-backend $(DESTDIR)/opt/excubitor/bin/excubitor-backend
 	# Install systemd unit file
 	mkdir -p $(DESTDIR)/etc/systemd/system
-	install -m 0755 package/systemd/excubitor.service $(DESTDIR)/etc/systemd/system/excubitor.service
+	install -m 0755 package/systemd/excubitor.service $(DESTDIR)/lib/systemd/system/excubitor.service
 package/deb:
-	make DESTDIR=package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/ install
+	make DESTDIR=package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64 install
 	# Copying control file and adding version
 	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN
 	cp package/deb/control package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
