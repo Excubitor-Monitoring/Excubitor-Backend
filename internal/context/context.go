@@ -3,6 +3,7 @@ package ctx
 import (
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pubsub"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared/modules"
 	"sync"
 )
 
@@ -10,7 +11,7 @@ var singletonOnce sync.Once
 
 type Context struct {
 	broker  *pubsub.Broker
-	modules map[string]*Module
+	modules map[string]*modules.Module
 	logger  logging.Logger
 	lock    sync.RWMutex
 }
@@ -21,7 +22,7 @@ func GetContext() *Context {
 	if context == nil {
 		singletonOnce.Do(func() {
 			context = &Context{
-				modules: map[string]*Module{},
+				modules: map[string]*modules.Module{},
 			}
 		})
 	}
@@ -29,7 +30,7 @@ func GetContext() *Context {
 	return context
 }
 
-func (ctx *Context) RegisterModule(module *Module) {
+func (ctx *Context) RegisterModule(module *modules.Module) {
 	ctx.lock.RLock()
 	defer ctx.lock.RUnlock()
 
@@ -38,11 +39,11 @@ func (ctx *Context) RegisterModule(module *Module) {
 	startClock()
 }
 
-func (ctx *Context) GetModules() []Module {
+func (ctx *Context) GetModules() []modules.Module {
 	ctx.lock.RLock()
 	defer ctx.lock.RUnlock()
 
-	var modules []Module
+	var modules []modules.Module
 	for _, module := range ctx.modules {
 		modules = append(modules, *module)
 	}

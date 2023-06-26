@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/http_server/helper"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared/modules"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -13,11 +15,13 @@ import (
 )
 
 func TestInfo(t *testing.T) {
+	logger = logging.GetLogger()
+
 	ctx.GetContext().RegisterModule(
-		ctx.NewModule(
+		modules.NewModule(
 			"TestModule",
-			ctx.NewVersion(0, 0, 1),
-			[]ctx.Component{},
+			modules.NewVersion(0, 0, 1),
+			[]modules.Component{},
 			func() {},
 		),
 	)

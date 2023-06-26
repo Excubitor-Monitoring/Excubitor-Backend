@@ -1,17 +1,19 @@
 package models
 
-import ctx "github.com/Excubitor-Monitoring/Excubitor-Backend/internal/context"
+import (
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared/modules"
+)
 
 type InfoResponse struct {
-	Authentication Authentication `json:"authentication"`
-	Modules        []ctx.Module   `json:"modules"`
+	Authentication Authentication   `json:"authentication"`
+	Modules        []modules.Module `json:"modules"`
 }
 
 type Authentication struct {
 	Method string `json:"method"`
 }
 
-func NewInfoResponse(authenticationMethod string, modules []ctx.Module) InfoResponse {
+func NewInfoResponse(authenticationMethod string, modules []modules.Module) InfoResponse {
 	return InfoResponse{
 		Authentication: Authentication{
 			Method: authenticationMethod,

@@ -40,6 +40,8 @@ func info(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		jsonResult, err := json.Marshal(models.NewInfoResponse("PAM", ctx.GetContext().GetModules()))
 		if err != nil {
+			logger.Error(fmt.Sprintf("Could not marshal info response. Reason: %s", err))
+			helper.ReturnError(w, r, 500, "Internal server error!")
 			return
 		}
 

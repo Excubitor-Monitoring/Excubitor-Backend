@@ -10,7 +10,9 @@ import (
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/integrated_modules/cpu"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/integrated_modules/memory"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/logging"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/plugins"
 	"github.com/Excubitor-Monitoring/Excubitor-Backend/internal/pubsub"
+	"github.com/Excubitor-Monitoring/Excubitor-Backend/pkg/shared/modules"
 )
 
 func Execute() error {
@@ -44,19 +46,19 @@ func Execute() error {
 	logger.Debug("Loading context...")
 	context := ctx.GetContext()
 	context.RegisterModule(
-		ctx.NewModule(
+		modules.NewModule(
 			"main",
-			ctx.NewVersion(0, 0, 1),
-			[]ctx.Component{},
+			modules.NewVersion(0, 0, 1),
+			[]modules.Component{},
 			func() {},
 		),
 	)
 
 	context.RegisterModule(
-		ctx.NewModule(
-			"cpu",
-			ctx.NewVersion(0, 0, 1),
-			[]ctx.Component{
+		modules.NewModule(
+			"CPU",
+			modules.NewVersion(0, 0, 1),
+			[]modules.Component{
 				{
 					TabName: "CPU Information",
 					JSFile:  "static/internal/cpu/info.js",
@@ -83,10 +85,10 @@ func Execute() error {
 	)
 
 	context.RegisterModule(
-		ctx.NewModule(
-			"memory",
-			ctx.NewVersion(0, 0, 1),
-			[]ctx.Component{
+		modules.NewModule(
+			"Memory",
+			modules.NewVersion(0, 0, 1),
+			[]modules.Component{
 				{
 					TabName: "RAM Usage",
 					JSFile:  "static/internal/memory/ram.js",
@@ -114,6 +116,13 @@ func Execute() error {
 
 	logger.Debug("Registering broker...")
 	context.RegisterBroker(pubsub.NewBroker())
+
+	if err := plugins.LoadPlugins(); err != nil {
+		return err
+	}
+	if err := plugins.InitPlugins(); err != nil {
+		return err
+	}
 
 	logger.Debug("Starting HTTP Server!")
 
