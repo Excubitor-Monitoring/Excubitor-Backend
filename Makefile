@@ -100,6 +100,9 @@ install:
 	# Install systemd unit file
 	mkdir -p $(DESTDIR)/lib/systemd/system
 	install -m 0644 package/systemd/excubitor.service $(DESTDIR)/lib/systemd/system/excubitor.service
+	# Install copyright file
+	mkdir -p $(DESTDIR)/usr/share/doc/excubitor
+	install -m 0644 package/deb/copyright $(DESTDIR)/usr/share/doc/excubitor
 package/deb:
 	make DESTDIR=package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64 install
 	# Copying control file and adding version
