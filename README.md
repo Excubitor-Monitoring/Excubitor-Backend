@@ -69,14 +69,15 @@ The package can be found in the `package/deb` folder.
 
 ### Golang dependencies
 
-| Dependency                                        | Creator                                                            | License                                                              |
-|---------------------------------------------------|--------------------------------------------------------------------|----------------------------------------------------------------------|
-| [Gobwas WS](https://github.com/gobwas/ws)         | Sergey Kamardin and contributors                                   | [MIT](https://github.com/gobwas/ws/blob/master/LICENSE)              |
-| [jwt-go](https://github.com/golang-jwt/jwt)       | Luis Gabriel Gomez, Michael Fridman, Alistair Hey and contributors | [MIT](https://github.com/golang-jwt/jwt/blob/main/LICENSE)           |
-| [uuid](https://github.com/google/uuid)            | Google Inc. and contributors                                       | [BSD-3-Clause](https://github.com/google/uuid)                       |
-| [koanf](https://github.com/knadh/koanf)           | Kailash Nadh and contributors                                      | [MIT](https://github.com/knadh/koanf/blob/master/LICENSE)            |
-| [go-sqlite3](https://github.com/mattn/go-sqlite3) | Yasuhiro Matsumoto and contributors                                | [MIT](https://github.com/mattn/go-sqlite3/blob/master/LICENSE)       |
-| [pam](https://github.com/msteinert/pam)           | Mike Steinert and contributors                                     | [BSD-2-Clause](https://github.com/msteinert/pam/blob/master/LICENSE) |
-| [cors](https://github.com/rs/cors)                | Olivier Poitrey and contributors                                   | [MIT](https://github.com/rs/cors/blob/master/LICENSE)                |
-| [pflag](https://github.com/spf13/pflag)           | Steve Francia and contributors                                     | [BSD-3-Clause](https://github.com/spf13/pflag/blob/master/LICENSE)   |
-| [testify](https://github.com/stretchr/testify)    | Stretchr Inc. and contributors                                     | [MIT](https://github.com/stretchr/testify/blob/master/LICENSE)       |
+| Dependency                                          | Creator                                                            | License                                                              |
+|-----------------------------------------------------|--------------------------------------------------------------------|----------------------------------------------------------------------|
+| [Gobwas WS](https://github.com/gobwas/ws)           | Sergey Kamardin and contributors                                   | [MIT](https://github.com/gobwas/ws/blob/master/LICENSE)              |
+| [jwt-go](https://github.com/golang-jwt/jwt)         | Luis Gabriel Gomez, Michael Fridman, Alistair Hey and contributors | [MIT](https://github.com/golang-jwt/jwt/blob/main/LICENSE)           |
+| [uuid](https://github.com/google/uuid)              | Google, Inc. and contributors                                      | [BSD-3-Clause](https://github.com/google/uuid)                       |
+| [koanf](https://github.com/knadh/koanf)             | Kailash Nadh and contributors                                      | [MIT](https://github.com/knadh/koanf/blob/master/LICENSE)            |
+| [go-sqlite3](https://github.com/mattn/go-sqlite3)   | Yasuhiro Matsumoto and contributors                                | [MIT](https://github.com/mattn/go-sqlite3/blob/master/LICENSE)       |
+| [pam](https://github.com/msteinert/pam)             | Mike Steinert and contributors                                     | [BSD-2-Clause](https://github.com/msteinert/pam/blob/master/LICENSE) |
+| [cors](https://github.com/rs/cors)                  | Olivier Poitrey and contributors                                   | [MIT](https://github.com/rs/cors/blob/master/LICENSE)                |
+| [pflag](https://github.com/spf13/pflag)             | Steve Francia and contributors                                     | [BSD-3-Clause](https://github.com/spf13/pflag/blob/master/LICENSE)   |
+| [testify](https://github.com/stretchr/testify)      | Stretchr, Inc. and contributors                                    | [MIT](https://github.com/stretchr/testify/blob/master/LICENSE)       |
+| [go-plugin](https://github.com/hashicorp/go-plugin) | HashiCorp, Inc. and contributors                                   | [MPL-2.0](https://github.com/hashicorp/go-plugin/blob/main/LICENSE)  |
