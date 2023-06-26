@@ -1,4 +1,14 @@
-Package: Excubitor
+Package: excubitor
 Architecture: amd64
 Maintainer: Lucca Greschner <luccagreschner@gmail.com>
 Description: Web application to monitor your linux system
+ Excubitor is a modular application that allows to monitor your linux system.
+ It can be read through a web-based frontend hosted separately.
+ .
+ This part of the application provides a websocket API
+ that can be used to subscribe to available system parameters.
+ The application can be extended through plugins that provide both,
+ the methods to retrieve system parameters and the frontend components
+ delivered by the separately installed frontend application.
+Priority: optional
+Section: admin

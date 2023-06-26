@@ -4,12 +4,14 @@ GO=go
 GOTEST=$(GO) test
 GOCOVER=$(GO) tool cover
 GOMOD=$(GO) mod
-GOBUILD=$(GO) build
+GOBUILD=$(GO) build -ldflags="-s -w"
 GORUN=$(GO) run
 
 NPM=yarn
 NPMI=install
 NPMBUILD=run build
+
+UPX=upx
 
 EXCUBITOR_VERSION=0.0.1-alpha
 
@@ -60,6 +62,7 @@ build:
 	make components
 	@echo "Compiling project for current platform"
 	$(GOBUILD) -o bin/excubitor-backend ./cmd/main.go
+	@if [ "$(USE_UPX)" = "true" ]; then echo "Using UPX to compress the binary..."; $(UPX) bin/excubitor-backend; fi
 rebuild:
 	make clean
 	make build
@@ -67,24 +70,10 @@ clean:
 	@echo "Removing binary packages"
 	rm -rf bin/excubitor-backend
 	@echo "Removing built javascript files"
-	rm -rf components/CPU-Info/dist
-	rm -rf components/CPU-Clock-Hisotry/dist
-	rm -rf components/CPU-Usage/dist
-	rm -rf components/CPU-Usage-History/dist
-	rm -rf components/RAM-Usage/dist
-	rm -rf components/RAM-Usage-History/dist
-	rm -rf components/Swap-Usage/dist
-	rm -rf components/Swap-Usage-History/dist
+	rm -rf components/*/dist
 	rm -rf internal/frontend/static/internal/*
 	@echo "Removing javascript dependencies"
-	rm -rf components/CPU-Info/node_modules
-	rm -rf components/CPU-Clock-History/node_modules
-	rm -rf components/CPU-Usage/node_modules
-	rm -rf components/CPU-Usage-History/node_modules
-	rm -rf components/RAM-Usage/node_modules
-	rm -rf components/RAM-Usage-History/node_modules
-	rm -rf components/Swap-Usage/node_modules
-	rm -rf components/Swap-Usage-History/node_modules
+	rm -rf components/*/node_modules
 	@echo "Removing packaging files"
 	rm -rf package/deb/excubitor_*
 	@echo "Removing coverage reports"
@@ -104,18 +93,22 @@ install:
 	make build
 	# Install Configuration file
 	mkdir -p $(DESTDIR)/etc/excubitor
-	install -m 0755 config.sample.yml $(DESTDIR)/etc/excubitor/config.yml
+	install -m 0644 config.sample.yml $(DESTDIR)/etc/excubitor/config.yml
 	# Install binary
 	mkdir -p $(DESTDIR)/opt/excubitor/bin
 	install -m 0755 bin/excubitor-backend $(DESTDIR)/opt/excubitor/bin/excubitor-backend
 	# Install systemd unit file
-	mkdir -p $(DESTDIR)/etc/systemd/system
-	install -m 0755 package/systemd/excubitor.service $(DESTDIR)/etc/systemd/system/excubitor.service
+	mkdir -p $(DESTDIR)/lib/systemd/system
+	install -m 0644 package/systemd/excubitor.service $(DESTDIR)/lib/systemd/system/excubitor.service
+	# Install copyright file
+	mkdir -p $(DESTDIR)/usr/share/doc/excubitor
+	install -m 0644 package/deb/copyright $(DESTDIR)/usr/share/doc/excubitor
 package/deb:
-	make DESTDIR=package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/ install
+	make DESTDIR=package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64 install
 	# Copying control file and adding version
 	mkdir -p package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN
 	cp package/deb/control package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
+	cp package/deb/conffiles package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/conffiles
 	@echo "Version: $(EXCUBITOR_VERSION)" >> package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64/DEBIAN/control
 	# Assemble package
 	dpkg-deb --build --root-owner-group package/deb/excubitor_$(EXCUBITOR_VERSION)_amd64
