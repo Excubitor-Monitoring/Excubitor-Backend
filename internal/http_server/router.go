@@ -42,7 +42,6 @@ func Serve(w http.ResponseWriter, r *http.Request) {
 	default:
 		logger.Trace(fmt.Sprintf("[%s]: %s - %s -> NOT FOUND", remoteAddress, r.URL.Path, remoteAddress))
 		helper.ReturnError(w, r, 404, fmt.Sprintf("Couldn't find requested resource %s!", r.URL.Path))
-		http.NotFound(w, r)
 		return
 	}
 
