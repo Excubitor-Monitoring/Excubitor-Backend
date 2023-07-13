@@ -30,15 +30,15 @@ func newSubscriber() (string, *Subscriber) {
 }
 
 func (subscriber *Subscriber) addMonitor(monitor string) {
-	subscriber.lock.RLock()
-	defer subscriber.lock.RUnlock()
+	subscriber.lock.Lock()
+	defer subscriber.lock.Unlock()
 
 	subscriber.monitors[monitor] = true
 }
 
 func (subscriber *Subscriber) removeMonitor(monitor string) {
-	subscriber.lock.RLock()
-	defer subscriber.lock.RUnlock()
+	subscriber.lock.Lock()
+	defer subscriber.lock.Unlock()
 
 	delete(subscriber.monitors, monitor)
 }
@@ -48,7 +48,7 @@ func (subscriber *Subscriber) GetMonitors() []string {
 	subscriber.lock.RLock()
 	defer subscriber.lock.RUnlock()
 
-	monitors := []string{}
+	var monitors []string
 	for monitor := range subscriber.monitors {
 		monitors = append(monitors, monitor)
 	}
