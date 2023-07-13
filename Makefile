@@ -19,7 +19,7 @@ install-deps:
 	echo "Installing all go dependencies"
 	$(GOMOD) download
 components:
-	git submodule init
+	git submodule update --init --recursive
 	@echo "Building frontend components"
 	@echo "Building CPU-Info component"
 	make components/CPU-Info/dist
