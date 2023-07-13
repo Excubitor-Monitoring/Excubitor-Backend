@@ -59,8 +59,8 @@ func (broker *Broker) Subscribe(subscriber *Subscriber, monitor string) {
 
 // Unsubscribe removes a monitor from a given subscriber
 func (broker *Broker) Unsubscribe(subscriber *Subscriber, monitor string) {
-	broker.lock.RLock()
-	defer broker.lock.RUnlock()
+	broker.lock.Lock()
+	defer broker.lock.Unlock()
 
 	broker.logger.Debug(fmt.Sprintf("Unsubscribing %s from monitor %s.", monitor, subscriber.id))
 
