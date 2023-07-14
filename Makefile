@@ -13,7 +13,7 @@ NPMBUILD=run build
 
 UPX=upx
 
-EXCUBITOR_VERSION=0.0.1-alpha
+EXCUBITOR_VERSION=0.0.1
 
 install-deps:
 	echo "Installing all go dependencies"
