@@ -1,0 +1,31 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Excubitor
+Source: https://github.com/Excubitor-Monitoring/Excubitor-Backend
+
+Files: opt/bin/excubitor-backend
+Copyright: Kay Knoepfle
+ Lucca Greschner
+License: GPL-3+
+
+Files: lib/systemd/system/excubitor.service
+Copyright: Lucca Greschner
+License: GPL-3+
+
+Files: etc/excubitor/config.yml
+Copyright: Lucca Greschner
+License: GPL-3+
+
+License: GPL-3+
+ This program is free software; you can redistribute it
+ and/or modify it under the terms of the GNU General Public
+ License as published by the Free Software Foundation; either
+ version 3 of the License, or (at your option) any later
+ version.
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 3 can be found in the file
+ `/usr/share/common-licenses/GPL-3'.
+
+Copyright Notice
+
+Copyright © 2023 Kay Knöpfle <kontakt@kay-knoepfle.de>, Lucca Greschner <luccagreschner@gmail.com>

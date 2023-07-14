@@ -1,0 +1,43 @@
+# MAIN CONFIGURATION
+main:
+    # Defines whether the startup banner should be displayed.
+    print_startup_banner: true
+# LOGGING CONFIGURATION
+# Available log levels: TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+# Available log methods: CONSOLE, FILE, HYBRID
+logging:
+    log_level: INFO
+    method: CONSOLE
+# HTTP CONFIGURATION
+#
+http:
+    host: 0.0.0.0
+    port: 8080
+    cors:
+        allowed_origins:
+            - '*'
+        allowed_methods:
+            - 'GET'
+            - 'POST'
+        allowed_headers:
+            - 'Origin'
+            - 'Content-Type'
+            - 'Authorization'
+    auth:
+        jwt:
+            access_token_secret: "" # Set me before application startup
+            refresh_token_secret: "" # Set me before application startup
+# Data configuration
+data:
+    # This defines how often modules shall report their values.
+    # Default: 5s - Be careful with this setting as it will lead to larger database sizes
+    module_clock: 5s
+    # This defines how long data shall be stored in the database.
+    # Default: 720h (30 days)
+    storage_time: 720h
+    # This defines how often database entries older than the time defined in storage_time shall be purged.
+    # Default: 1h
+    purge_cycle: 1h
+    # This defines where the database file shall be stored.
+    # Default: history.db
+    database_file: 'history.db'
