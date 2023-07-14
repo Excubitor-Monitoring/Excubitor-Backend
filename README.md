@@ -6,61 +6,7 @@ This is the backend part to Excubitor. Excubitor is a monitoring tool for linux 
 
 ## Building
 
-### Install dependencies
-
-To build the backend application, the following dependencies need to be installed on your system:
-
-- Golang 1.19 / 1.20
-- PAM development library
-- Yarn (for building the frontend components)
-
-You may install them the following ways, depending on your linux distribution:
-
-#### Debian(-based)
-
-Although this is only tested on Debian 12, it is very likely that it also works on Debian derivatives such as Ubuntu or Linux Mint.
-
-```bash
-sudo apt install golang-1.19 libpam0g-dev npm make
-npm install --global yarn
-```
-
-#### Fedora
-
-```bash
-sudo dnf install golang pam-devel npm make
-npm install --global yarn
-```
-
-### Build process
-
-To install all go dependencies, run
-
-```bash
-make install-deps
-```
-
-Then to build the application, run
-
-```bash
-make build
-```
-
-The built executable can be found in the `bin` directory.
-
-For further instructions on building the application, please see the repository's wiki.
-
-## Packaging
-
-This application also provides a script to package it into .deb format. This can only be done in Debian(-based) systems.
-
-To package the application, you may run
-
-```bash
-make package/deb
-```
-
-The package can be found in the `package/deb` folder.
+For instructions on building the application, please see the repository's wiki.
 
 ## Dependencies
 
