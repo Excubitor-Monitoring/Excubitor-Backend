@@ -48,6 +48,8 @@ make build
 
 The built executable can be found in the `bin` directory.
 
+For further instructions on building the application, please see the repository's wiki.
+
 ## Packaging
 
 This application also provides a script to package it into .deb format. This can only be done in Debian(-based) systems.
