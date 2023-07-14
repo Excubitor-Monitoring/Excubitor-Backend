@@ -1,4 +1,4 @@
-module github.com/Excubitor-Monitoring/Excubitor-Backend v0.0.1
+module github.com/Excubitor-Monitoring/Excubitor-Backend
 
 go 1.19
 
