@@ -97,6 +97,7 @@ install:
 	# Install binary
 	mkdir -p $(DESTDIR)/opt/excubitor/bin
 	install -m 0755 bin/excubitor-backend $(DESTDIR)/opt/excubitor/bin/excubitor-backend
+	mkdir -p $(DESTDIR)/opt/excubitor/plugins
 	# Install systemd unit file
 	mkdir -p $(DESTDIR)/lib/systemd/system
 	install -m 0644 package/systemd/excubitor.service $(DESTDIR)/lib/systemd/system/excubitor.service
