@@ -2,6 +2,8 @@
 
 ## About
 
+This is the backend part to Excubitor. Excubitor is a monitoring tool for linux systems that was created for a uni project at Stuttgart Media University in the course B.Sc. Computer Science and Media. This project is not meant as a productive application. We used modern and cutting edge tools to create an application that is as modular as possible - while compromising on features and possibly security. You can find our results and learnings in this repository's wiki.
+
 ## Building
 
 ### Install dependencies
@@ -81,3 +83,9 @@ The package can be found in the `package/deb` folder.
 | [pflag](https://github.com/spf13/pflag)             | Steve Francia and contributors                                     | [BSD-3-Clause](https://github.com/spf13/pflag/blob/master/LICENSE)   |
 | [testify](https://github.com/stretchr/testify)      | Stretchr, Inc. and contributors                                    | [MIT](https://github.com/stretchr/testify/blob/master/LICENSE)       |
 | [go-plugin](https://github.com/hashicorp/go-plugin) | HashiCorp, Inc. and contributors                                   | [MPL-2.0](https://github.com/hashicorp/go-plugin/blob/main/LICENSE)  |
+
+# Copyright
+
+Excubitor-Backend (c) 2023 Lucca Greschner
+
+SPDX-License-Identifier: GPL-3.0
