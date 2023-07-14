@@ -21,14 +21,14 @@ You may install them the following ways, depending on your linux distribution:
 Although this is only tested on Debian 12, it is very likely that it also works on Debian derivatives such as Ubuntu or Linux Mint.
 
 ```bash
-sudo apt install golang-1.19 libpam0g-dev npm
+sudo apt install golang-1.19 libpam0g-dev npm make
 npm install --global yarn
 ```
 
 #### Fedora
 
 ```bash
-sudo dnf install golang pam-devel npm
+sudo dnf install golang pam-devel npm make
 npm install --global yarn
 ```
 
